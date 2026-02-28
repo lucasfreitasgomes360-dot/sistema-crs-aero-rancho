@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerência CRS</title>
+    <style>body{font-family:sans-serif; padding:50px; text-align:center;}</style>
+</head>
+<body>
+    <h1>Painel de Gerência - Avisos da TV</h1>
+    <textarea id="avisos" rows="5" style="width:100%; max-width:600px; font-size:18px;"></textarea><br>
+    <button onclick="salvar()" style="padding:15px 40px; background:red; color:white; border:none; cursor:pointer;">ATUALIZAR CARROSSEL NA TV</button>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = { /* MESMA CONFIG */ };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function salvar() {
+            const txt = document.getElementById('avisos').value;
+            db.ref('avisos').set(txt);
+            alert("Avisos atualizados!");
+        }
+        
+        // Carregar aviso atual
+        db.ref('avisos').once('value', snap => { document.getElementById('avisos').value = snap.val(); });
+    </script>
+</body>
+</html>
