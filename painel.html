@@ -19,7 +19,7 @@
         .ativa { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .btn-menu { width: 100%; padding: 20px; margin: 8px 0; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: bold; color: white; cursor: pointer; transition: 0.3s; }
+        .btn-menu { width: 100%; padding: 18px; margin: 8px 0; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: bold; color: white; cursor: pointer; transition: 0.3s; }
         .bg-med { background: var(--azul); }
         .bg-enf { background: var(--verde); }
         .bg-odo { background: var(--laranja); }
@@ -29,9 +29,8 @@
         input[type="text"] { width: 100%; padding: 18px; border: 3px solid #ced4da; border-radius: 12px; font-size: 1.5rem; box-sizing: border-box; text-transform: uppercase; margin-bottom: 15px; text-align: center; }
         .btn-chamar { width: 100%; padding: 22px; border: none; border-radius: 15px; font-size: 1.4rem; font-weight: bold; color: white; cursor: pointer; background: var(--dark); }
         
-        /* Estilo do Card de Rechamada com Horário */
         .card-rechamado { background: #fff3cd; border: 2px dashed #856404; padding: 15px; border-radius: 15px; margin-top: 20px; color: #856404; }
-        .hora-marca { font-size: 0.85rem; background: #856404; color: white; padding: 2px 8px; border-radius: 5px; margin-left: 5px; }
+        .hora-marca { font-size: 0.85rem; background: #856404; color: white; padding: 2px 8px; border-radius: 5px; margin-left: 5px; font-weight: bold; }
         .btn-rechamar { background: #856404; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 1rem; }
         
         .btn-voltar { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; margin-top: 15px; }
@@ -59,14 +58,15 @@
             <button class="btn-menu bg-med" onclick="configurar('Consultório 04')">Consultório 04</button>
         </div>
         <div id="lista-enf" class="grupo-salas" style="display:none;">
-            <button class="btn-menu bg-enf" onclick="configurar('Triagem')">Triagem</button>
+            <button class="btn-menu bg-enf" onclick="configurar('Triagem 01')">Triagem 01</button>
+            <button class="btn-menu bg-enf" onclick="configurar('Triagem 02')">Triagem 02</button>
             <button class="btn-menu bg-enf" onclick="configurar('Medicação')">Medicação</button>
-            <button class="btn-menu bg-enf" onclick="configurar('Sala de Coleta')">Coleta</button>
+            <button class="btn-menu bg-enf" onclick="configurar('Sala de Coleta')">Sala de Coleta</button>
             <button class="btn-menu bg-enf" onclick="configurar('Reidratação')">Reidratação</button>
         </div>
         <div id="lista-odo" class="grupo-salas" style="display:none;">
-            <button class="btn-menu bg-odo" onclick="configurar('Odontologia 01')">Odonto 01</button>
-            <button class="btn-menu bg-odo" onclick="configurar('Odontologia 02')">Odonto 02</button>
+            <button class="btn-menu bg-odo" onclick="configurar('Odontologia 01')">Odontologia 01</button>
+            <button class="btn-menu bg-odo" onclick="configurar('Odontologia 02')">Odontologia 02</button>
         </div>
         <div id="lista-social" class="grupo-salas" style="display:none;">
             <button class="btn-menu bg-ss" onclick="configurar('Serviço Social')">Serviço Social</button>
@@ -81,7 +81,7 @@
         </div>
         
         <input type="text" id="nome-paciente" placeholder="NOME DO PACIENTE" autocomplete="off">
-        <button id="btn-acao" class="btn-chamar" onclick="chamar(false)">CHAMAR 🔔</button>
+        <button id="btn-acao" class="btn-chamar" onclick="chamar(false)">CHAMAR PACIENTE 🔔</button>
 
         <div id="bloco-rechamar" class="card-rechamado" style="display:none;">
             <div style="margin-bottom:5px;">ÚLTIMA CHAMADA:</div>
