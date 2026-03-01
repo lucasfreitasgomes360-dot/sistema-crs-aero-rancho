@@ -7,65 +7,70 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         body { background: #013154; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        header { background: white; color: #013154; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 6px solid #f1c40f; }
-        .layout-principal { display: flex; flex: 1; overflow: hidden; }
-        #chamada-foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; border-right: 2px solid rgba(255,255,255,0.1); }
-        .badge { font-size: 2rem; padding: 10px 50px; border-radius: 12px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; }
-        .setor-medico { background: #007bff; }
-        .setor-enfermagem { background: #28a745; }
-        .paciente-nome { font-size: 7vw; font-weight: 900; text-transform: uppercase; margin: 15px 0; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); }
-        .local-destino { font-size: 4vw; background: rgba(255,255,255,0.1); padding: 15px 60px; border-radius: 60px; border: 3px solid #f1c40f; font-weight: bold; }
-        .recado-titulo { font-size: 2.5rem; color: #f1c40f; font-weight: bold; margin-bottom: 10px; }
-        .recado-texto { font-size: 4.5vw; font-weight: bold; max-width: 85%; }
-        #historico-lateral { flex: 1; background: rgba(0,0,0,0.2); padding: 20px; }
-        .hist-titulo { font-size: 1.5rem; color: #f1c40f; border-bottom: 2px solid #f1c40f; margin-bottom: 15px; }
+        header { background: white; color: #013154; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid #f1c40f; }
+        .layout { display: flex; flex: 1; overflow: hidden; }
+        #foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-right: 2px solid rgba(255,255,255,0.1); }
+        .badge { font-size: 2rem; padding: 10px 50px; border-radius: 12px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; color: white; }
+        .paciente { font-size: 7.5vw; font-weight: 900; text-transform: uppercase; margin: 15px 0; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); }
+        .local { font-size: 4vw; background: rgba(255,255,255,0.1); padding: 15px 60px; border-radius: 60px; border: 3px solid #f1c40f; font-weight: bold; }
+        #historico { flex: 1; background: rgba(0,0,0,0.2); padding: 20px; }
         .hist-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 6px solid #f1c40f; }
         footer { background: #e74c3c; height: 60px; display: flex; align-items: center; overflow: hidden; }
-        .marquee { white-space: nowrap; font-size: 1.8rem; font-weight: bold; animation: scroll 25s linear infinite; }
+        .marquee { white-space: nowrap; font-size: 2rem; font-weight: bold; animation: scroll 25s linear infinite; width: 100%; }
         @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #013154; z-index: 1000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-        .btn-play { background: #f1c40f; color: #013154; border: none; padding: 30px 60px; font-size: 2.2rem; font-weight: bold; border-radius: 15px; }
     </style>
 </head>
 <body>
-<div id="overlay" onclick="iniciar()"><button class="btn-play">🔔 ATIVAR SISTEMA CRS</button></div>
+<div id="overlay" onclick="iniciar()"><button style="padding:20px; font-size:2rem; cursor:pointer;">🔔 ATIVAR SISTEMA</button></div>
 <header>
-    <div><h1 style="margin:0; font-size: 1.8rem;">CRS 24h - AERO RANCHO</h1><small>Dr. João Pereira da Rosa</small></div>
-    <div id="relogio">00:00</div>
+    <div><h1 style="margin:0;">CRS AERO RANCHO</h1><small>Dr. João Pereira da Rosa</small></div>
+    <div id="relogio" style="font-size:2.5rem; font-weight:bold;">00:00</div>
 </header>
-<div class="layout-principal">
-    <main id="chamada-foco"></main>
-    <aside id="historico-lateral"><div class="hist-titulo">ÚLTIMOS CHAMADOS</div><div id="lista-hist"></div></aside>
+<div class="layout">
+    <main id="foco"></main>
+    <aside id="historico"><div id="lista-hist"></div></aside>
 </div>
-<footer><div class="marquee" id="tv-avisos">Bem-vindo à unidade. Aguarde sua chamada...</div></footer>
+<footer><div class="marquee" id="tv-avisos">Aguardando avisos da gerência...</div></footer>
+
 <script>
     const firebaseConfig = { apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A", authDomain: "sistema-crs-aero-rancho.firebaseapp.com", databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com", projectId: "sistema-crs-aero-rancho", storageBucket: "sistema-crs-aero-rancho.firebasestorage.app", messagingSenderId: "543461454068", appId: "1:543461454068:web:c06dbdab52c065e6962ea1" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const bell = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-    let fila = [], ocupado = false, ativo = false, historico = [], iRec = 0;
-    const recados = [{t:"CLASSIFICAÇÃO", x:"O atendimento obedece à Classificação de Risco."}, {t:"DOCUMENTOS", x:"Tenha em mãos Cartão SUS e RG."}, {t:"PREVENÇÃO", x:"Evite água parada. Combata a Dengue."}];
-    
+    let ocupado = false, ativo = false, hist = [], iRec = 0;
+    const recados = [{t:"DENGUE", x:"Elimine criadouros. Use repelente."}, {t:"ATENÇÃO", x:"Acompanhe o painel para sua chamada."}];
+
     function iniciar() { ativo = true; document.getElementById('overlay').style.display='none'; bell.play(); carrossel(); setInterval(carrossel, 8000); }
-    function carrossel() { if(!ocupado && ativo) { const r = recados[iRec]; document.getElementById('chamada-foco').innerHTML = `<div class="recado-titulo">${r.t}</div><div class="recado-texto">${r.x}</div>`; iRec = (iRec + 1) % recados.length; } }
-    setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}); }, 1000);
-    db.ref('chamada_atual').on('value', snap => { const d = snap.val(); if(d && d.timestamp > Date.now() - 10000) { fila.push(d); if(!ocupado && ativo) processar(); } });
+    function carrossel() { if(!ocupado && ativo) { const r = recados[iRec]; document.getElementById('foco').innerHTML = `<h2 style="color:#f1c40f; font-size:3rem;">${r.t}</h2><p style="font-size:4vw; font-weight:bold;">${r.x}</p>`; iRec = (iRec + 1) % recados.length; } }
+    
+    setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
     db.ref('avisos').on('value', snap => { if(snap.val()) document.getElementById('tv-avisos').innerText = snap.val(); });
 
-    function processar() {
-        if(fila.length === 0 || !ativo) { ocupado = false; carrossel(); return; }
-        ocupado = true; const item = fila.shift();
-        let isMed = item.local.toLowerCase().includes("consultório");
-        document.getElementById('chamada-foco').innerHTML = `<div class="badge ${isMed?'setor-medico':'setor-enfermagem'}">${isMed?'MÉDICOS':'ENFERMAGEM'}</div><div class="paciente-nome">${item.nome}</div><div class="local-destino">${item.local}</div>`;
-        atualizarHist(item.nome, item.local); bell.play();
-        setTimeout(() => {
-            const prep = ["triagem", "coleta", "medicação", "reidratação"].some(x => item.local.toLowerCase().includes(x)) ? "à" : "ao";
-            const fala = new SpeechSynthesisUtterance(`Paciente ${item.nome}, dirija-se ${prep} ${item.local}`);
-            fala.lang = 'pt-BR'; window.speechSynthesis.speak(fala);
-            fala.onend = () => { setTimeout(() => { ocupado = false; processar(); }, 5000); };
-        }, 1300);
+    db.ref('chamada_atual').on('value', snap => {
+        const d = snap.val();
+        if(d && d.timestamp > Date.now() - 10000) processar(d);
+    });
+
+    function processar(item) {
+        ocupado = true;
+        let local = item.local.toLowerCase();
+        let cor = "#007bff", setor = "MÉDICOS";
+        
+        if(local.includes("triagem") || local.includes("medicação") || local.includes("coleta")) { cor = "#28a745"; setor = "ENFERMAGEM"; }
+        else if(local.includes("odontologia")) { cor = "#d35400"; setor = "ODONTOLOGIA"; }
+        else if(local.includes("social")) { cor = "#8e44ad"; setor = "SERVIÇO SOCIAL"; }
+
+        document.getElementById('foco').innerHTML = `<div class="badge" style="background:${cor}">${setor}</div><div class="paciente">${item.nome}</div><div class="local">${item.local}</div>`;
+        
+        hist.unshift(item); if(hist.length > 5) hist.pop();
+        document.getElementById('lista-hist').innerHTML = hist.map(h => `<div class="hist-item"><b>${h.nome}</b><br><small>${h.local}</small></div>`).join('');
+        
+        bell.play();
+        const fala = new SpeechSynthesisUtterance(`Paciente ${item.nome}, dirija-se à ${item.local}`);
+        fala.lang = 'pt-BR'; window.speechSynthesis.speak(fala);
+        fala.onend = () => { setTimeout(() => { ocupado = false; carrossel(); }, 6000); };
     }
-    function atualizarHist(n, l) { historico.unshift({n, l}); if(historico.length > 4) historico.pop(); document.getElementById('lista-hist').innerHTML = historico.map(h => `<div class="hist-item"><b>${h.n}</b><br><small>${h.l}</small></div>`).join(''); }
 </script>
 </body>
 </html>
