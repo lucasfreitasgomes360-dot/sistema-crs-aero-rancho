@@ -6,59 +6,32 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { 
-            background: #013154; color: white; font-family: 'Segoe UI', sans-serif; 
-            margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; 
-        }
-        header { 
-            background: white; color: #013154; padding: 10px 30px; 
-            display: flex; justify-content: space-between; align-items: center; border-bottom: 6px solid #f1c40f; 
-        }
-        .unidade-info { text-align: left; }
+        body { background: #013154; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        header { background: white; color: #013154; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 6px solid #f1c40f; }
         .dr-homenagem { font-size: 14px; font-weight: bold; color: #555; }
         #relogio { font-size: 2rem; font-weight: bold; }
-
         .layout-principal { display: flex; flex: 1; overflow: hidden; }
-
-        #chamada-foco { 
-            flex: 3; display: flex; flex-direction: column; justify-content: center; 
-            align-items: center; text-align: center; padding: 20px; border-right: 2px solid rgba(255,255,255,0.1);
-        }
-
-        /* Etiquetas de Setor */
-        .badge-setor {
-            font-size: 1.8rem; padding: 10px 40px; border-radius: 10px; font-weight: bold;
-            margin-bottom: 20px; text-transform: uppercase; letter-spacing: 3px;
-        }
+        #chamada-foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; border-right: 2px solid rgba(255,255,255,0.1); }
+        
+        /* Badges Dinâmicas */
+        .badge { font-size: 1.8rem; padding: 10px 40px; border-radius: 10px; font-weight: bold; margin-bottom: 20px; letter-spacing: 2px; }
         .setor-medico { background: #007bff; color: white; }
         .setor-enfermagem { background: #28a745; color: white; }
-
-        .paciente-nome { 
-            font-size: 7vw; font-weight: 900; text-transform: uppercase; 
-            line-height: 1.1; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); margin: 15px 0; 
-        }
-        .local-destino { 
-            font-size: 3.5vw; background: rgba(255,255,255,0.1); padding: 10px 50px; 
-            border-radius: 50px; border: 2px solid #f1c40f; 
-        }
-
-        /* Estilo para Recados */
+        
+        .paciente-nome { font-size: 7vw; font-weight: 900; text-transform: uppercase; line-height: 1.1; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); margin: 15px 0; }
+        .local-destino { font-size: 3.5vw; background: rgba(255,255,255,0.1); padding: 10px 50px; border-radius: 50px; border: 2px solid #f1c40f; }
+        
         .recado-titulo { font-size: 2.5rem; color: #f1c40f; margin-bottom: 20px; text-transform: uppercase; }
         .recado-texto { font-size: 4vw; font-weight: bold; max-width: 90%; line-height: 1.2; }
 
-        #historico-lateral { flex: 1; background: rgba(0,0,0,0.2); padding: 20px; display: flex; flex-direction: column; }
+        #historico-lateral { flex: 1; background: rgba(0,0,0,0.2); padding: 20px; }
         .hist-titulo { font-size: 1.5rem; color: #f1c40f; border-bottom: 2px solid #f1c40f; padding-bottom: 10px; margin-bottom: 15px; }
-        .hist-item { 
-            background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; 
-            margin-bottom: 10px; border-left: 5px solid #f1c40f;
-        }
-        .hist-nome { font-size: 1.3rem; font-weight: bold; display: block; text-transform: uppercase; }
-        .hist-local { font-size: 1rem; opacity: 0.8; }
-
+        .hist-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 5px solid #f1c40f; }
+        
         footer { background: #e74c3c; height: 60px; display: flex; align-items: center; overflow: hidden; }
         .marquee { white-space: nowrap; font-size: 1.8rem; font-weight: bold; animation: scroll 25s linear infinite; width: 100%; }
         @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-
+        
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #013154; z-index: 1000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
         .btn-play { background: #f1c40f; color: #013154; border: none; padding: 25px 50px; font-size: 2rem; font-weight: bold; border-radius: 15px; }
     </style>
@@ -84,14 +57,13 @@
             <div class="recado-texto">CRS AERO RANCHO</div>
         </div>
     </main>
-
     <aside id="historico-lateral">
-        <div class="hist-titulo">ÚLTIMOS CHAMADOS</div>
+        <div class="hist-titulo">HISTÓRICO</div>
         <div id="lista-hist"></div>
     </aside>
 </div>
 
-<footer><div class="marquee" id="tv-avisos">Bem-vindo à unidade.</div></footer>
+<footer><div class="marquee" id="tv-avisos">Mantenha a atenção na tela para sua chamada.</div></footer>
 
 <script>
     const firebaseConfig = {
@@ -105,43 +77,29 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    
     const bell = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-    let fila = [], ocupado = false, ativo = false, historico = [];
-    let tempoLimpeza;
-    let intervaloRecados;
+    let fila = [], ocupado = false, ativo = false, historico = [], tempoVoltaRecados;
 
-    const recados = [
-        { titulo: "Atendimento", texto: "Respeite a Classificação de Risco." },
-        { titulo: "Aviso", texto: "Mantenha o silêncio para ouvir sua chamada." },
-        { titulo: "Higiene", texto: "Lave as mãos e use álcool em gel." }
+    const recadosSaude = [
+        { t: "Classificação", x: "O atendimento obedece à Classificação de Risco." },
+        { t: "Aviso", x: "Tenha em mãos seu Cartão do SUS e documento." },
+        { t: "Prevenção", x: "Combata a Dengue: não deixe água parada." }
     ];
-    let indiceRecado = 0;
+    let iRecado = 0;
 
-    function iniciar() { 
-        ativo = true; 
-        document.getElementById('overlay').style.display = 'none'; 
-        bell.play().catch(e => {}); 
-        iniciarCarrossel();
-    }
+    function iniciar() { ativo = true; document.getElementById('overlay').style.display = 'none'; bell.play(); rodarRecados(); }
 
-    function iniciarCarrossel() {
-        if (intervaloRecados) clearInterval(intervaloRecados);
-        intervaloRecados = setInterval(() => {
-            if (!ocupado) {
-                const r = recados[indiceRecado];
-                document.getElementById('chamada-foco').innerHTML = `
-                    <div class="recado-titulo">${r.titulo}</div>
-                    <div class="recado-texto">${r.texto}</div>
-                `;
-                indiceRecado = (indiceRecado + 1) % recados.length;
+    function rodarRecados() {
+        setInterval(() => {
+            if (!ocupado && ativo) {
+                const r = recadosSaude[iRecado];
+                document.getElementById('chamada-foco').innerHTML = `<div class="recado-titulo">${r.t}</div><div class="recado-texto">${r.x}</div>`;
+                iRecado = (iRecado + 1) % recadosSaude.length;
             }
         }, 8000);
     }
 
-    setInterval(() => { 
-        document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}); 
-    }, 1000);
+    setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}); }, 1000);
 
     db.ref('chamada_atual').on('value', snap => {
         const d = snap.val();
@@ -157,49 +115,37 @@
         if (fila.length === 0 || !ativo) { ocupado = false; return; }
         ocupado = true;
         const item = fila.shift();
-        clearTimeout(tempoLimpeza);
+        clearTimeout(tempoVoltaRecados);
 
-        // Lógica de separação de setores
-        let localLower = item.local.toLowerCase();
-        let categoria = "ENFERMAGEM";
-        let classeCor = "setor-enfermagem";
-
-        if (localLower.includes("consultório") || localLower.includes("médico")) {
-            categoria = "MÉDICOS";
-            classeCor = "setor-medico";
-        }
+        let isMed = item.local.toLowerCase().includes("consultório");
+        let cat = isMed ? "MÉDICOS" : "ENFERMAGEM";
+        let cor = isMed ? "setor-medico" : "setor-enfermagem";
 
         document.getElementById('chamada-foco').innerHTML = `
-            <div class="badge-setor ${classeCor}">${categoria}</div>
+            <div class="badge ${cor}">${cat}</div>
             <div class="paciente-nome">${item.nome}</div>
             <div class="local-destino">${item.local}</div>
         `;
 
-        atualizarHistorico(item.nome, item.local);
+        atualizarHist(item.nome, item.local);
         bell.play();
 
         setTimeout(() => {
-            const prep = ["triagem", "sala", "coleta", "medicação", "inalação", "odontologia", "social", "reidratação"].some(x => localLower.includes(x)) ? "à" : "ao";
-            const fala = new SpeechSynthesisUtterance(`Atenção... Paciente... ${item.nome}... dirija-se ${prep} ${item.local}`);
+            const prep = ["triagem", "sala", "coleta", "medicação", "reidratação"].some(x => item.local.toLowerCase().includes(x)) ? "à" : "ao";
+            const fala = new SpeechSynthesisUtterance(`Paciente ${item.nome}, dirija-se ${prep} ${item.local}`);
             fala.lang = 'pt-BR'; fala.rate = 0.8;
             window.speechSynthesis.speak(fala);
-            
             fala.onend = () => { 
-                tempoLimpeza = setTimeout(() => { ocupado = false; }, 5000);
-                if (fila.length > 0) { clearTimeout(tempoLimpeza); setTimeout(processar, 2000); }
+                tempoVoltaRecados = setTimeout(() => { ocupado = false; }, 5000);
+                if (fila.length > 0) processar();
             };
         }, 1300);
     }
 
-    function atualizarHistorico(nome, local) {
-        historico.unshift({nome, local});
+    function atualizarHist(n, l) {
+        historico.unshift({n, l});
         if(historico.length > 4) historico.pop();
-        document.getElementById('lista-hist').innerHTML = historico.map(h => `
-            <div class="hist-item">
-                <span class="hist-nome">${h.nome}</span>
-                <span class="hist-local">${h.local}</span>
-            </div>
-        `).join('');
+        document.getElementById('lista-hist').innerHTML = historico.map(h => `<div class="hist-item"><b>${h.n}</b><br><small>${h.l}</small></div>`).join('');
     }
 </script>
 </body>
