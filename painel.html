@@ -2,36 +2,54 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Painel de Chamada</title>
+    <title>Painel de Chamada - CRS Aero Rancho</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f7f6; text-align: center; }
-        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 450px; margin: auto; }
-        select, input, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 18px; box-sizing: border-box; }
-        button { background: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; }
-        .re-chamar { background: #2980b9; padding: 10px; font-size: 14px; width: auto; margin-left: 10px; }
-        .item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; text-align: center; }
+        .card { background: white; max-width: 500px; margin: auto; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #013154; margin-top: 0; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1.2rem; box-sizing: border-box; }
+        .grid-setores { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-setor { padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-size: 14px; }
+        .medico { background: #007bff; } /* Azul */
+        .enfermagem { background: #28a745; } /* Verde */
+        .btn-setor:hover { opacity: 0.8; }
+        .hist { text-align: left; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        .item-hist { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dotted #ccc; font-size: 14px; }
     </style>
 </head>
 <body>
+
 <div class="card">
     <h2>Chamar Paciente</h2>
-    <select id="setor">
-        <option>Triagem 01</option><option>Triagem 02</option><option>Consultório 01</option>
-        <option>Consultório 02</option><option>Consultório 03</option><option>Consultório 04</option>
-        <option>Consultório 05</option><option>Odontologia</option><option>Serviço Social</option>
-        <option>Sala de Coleta</option><option>Sala de Medicação</option><option>Inalação</option>
-    </select>
-    <input type="text" id="nome" placeholder="NOME DO PACIENTE" autocomplete="off">
-    <button onclick="chamar()">CHAMAR AGORA 🔔</button>
-    <div style="margin-top:30px; text-align: left;">
-        <strong>Recentes deste setor:</strong>
-        <div id="hist"></div>
+    <input type="text" id="nome-paciente" placeholder="Nome Completo do Paciente" autocomplete="off">
+    
+    <p><strong>SELECIONE O LOCAL:</strong></p>
+    
+    <div style="color: #007bff; font-weight: bold; margin-bottom: 5px;">ÁREA MÉDICA</div>
+    <div class="grid-setores">
+        <button class="btn-setor medico" onclick="chamar('Consultório 01')">Consultório 01</button>
+        <button class="btn-setor medico" onclick="chamar('Consultório 02')">Consultório 02</button>
+        <button class="btn-setor medico" onclick="chamar('Consultório 03')">Consultório 03</button>
+        <button class="btn-setor medico" onclick="chamar('Consultório 04')">Consultório 04</button>
+    </div>
+
+    <div style="color: #28a745; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">ENFERMAGEM / SALAS</div>
+    <div class="grid-setores">
+        <button class="btn-setor enfermagem" onclick="chamar('Triagem')">Triagem</button>
+        <button class="btn-setor enfermagem" onclick="chamar('Sala de Coleta')">Sala de Coleta</button>
+        <button class="btn-setor enfermagem" onclick="chamar('Medicação')">Medicação</button>
+        <button class="btn-setor enfermagem" onclick="chamar('Reidratação')">Reidratação</button>
+    </div>
+
+    <div class="hist">
+        <strong>Últimos Chamados:</strong>
+        <div id="lista-painel"></div>
     </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A",
@@ -45,26 +63,28 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function chamar(n = null) {
-        const nome = n || document.getElementById('nome').value;
-        const local = document.getElementById('setor').value;
-        if(!nome) return alert("Digite o nome!");
-        const dados = { nome, local, timestamp: Date.now() };
+    function chamar(local) {
+        const nome = document.getElementById('nome-paciente').value.trim();
+        if (!nome) { alert("Por favor, digite o nome do paciente!"); return; }
+
+        const dados = {
+            nome: nome,
+            local: local,
+            timestamp: Date.now()
+        };
+
         db.ref('chamada_atual').set(dados);
-        db.ref(`hist/${local.replace(/\s/g,'')}`).push({nome, hora: new Date().toLocaleTimeString()});
-        document.getElementById('nome').value = "";
+        document.getElementById('nome-paciente').value = ""; // Limpa campo
+        atualizarHistLocal(nome, local);
     }
 
-    document.getElementById('setor').onchange = atualizarHist;
-    function atualizarHist() {
-        const setor = document.getElementById('setor').value.replace(/\s/g,'');
-        db.ref(`hist/${setor}`).limitToLast(5).on('value', snap => {
-            let h = "";
-            snap.forEach(i => { h += `<div class="item">${i.val().nome} <button class="re-chamar" onclick="chamar('${i.val().nome}')">Re-chamar</button></div>`; });
-            document.getElementById('hist').innerHTML = h;
-        });
+    function atualizarHistLocal(n, l) {
+        const div = document.getElementById('lista-painel');
+        const item = document.createElement('div');
+        item.className = 'item-hist';
+        item.innerHTML = `<span>${n}</span> <b>${l}</b>`;
+        div.prepend(item);
     }
-    atualizarHist();
 </script>
 </body>
 </html>
