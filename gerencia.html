@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerência</title>
+    <style>body{font-family:sans-serif; padding:40px; text-align:center; background:#f4f7f6;}</style>
+</head>
+<body>
+    <div style="max-width:500px; margin:auto; background:white; padding:30px; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+        <h1>Avisos da TV</h1>
+        <textarea id="txt" rows="4" style="width:100%; font-size:18px; padding:10px;"></textarea><br><br>
+        <button onclick="salvar()" style="padding:15px 30px; background:#e74c3c; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">ATUALIZAR TV</button>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A",
+          authDomain: "sistema-crs-aero-rancho.firebaseapp.com",
+          databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com",
+          projectId: "sistema-crs-aero-rancho",
+          storageBucket: "sistema-crs-aero-rancho.firebasestorage.app",
+          messagingSenderId: "543461454068",
+          appId: "1:543461454068:web:c06dbdab52c065e6962ea1"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        function salvar() { db.ref('avisos').set(document.getElementById('txt').value); alert("TV Atualizada!"); }
+        db.ref('avisos').once('value', snap => { document.getElementById('txt').value = snap.val() || ""; });
+    </script>
+</body>
+</html>
