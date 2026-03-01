@@ -11,33 +11,30 @@
             --azul: #0056b3; --verde: #1e7e34; --laranja: #d35400; 
             --roxo: #8e44ad; --amarelo: #f1c40f; --dark: #013154;
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #e9ecef; margin: 0; padding: 15px; display: flex; justify-content: center; }
+        body { font-family: 'Segoe UI', sans-serif; background: #e9ecef; margin: 0; padding: 15px; display: flex; justify-content: center; }
         .container { background: white; width: 100%; max-width: 480px; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); text-align: center; }
         
-        h2 { color: var(--dark); margin-bottom: 20px; border-bottom: 3px solid var(--amarelo); padding-bottom: 10px; font-size: 1.5rem; }
+        h2 { color: var(--dark); margin-bottom: 20px; border-bottom: 3px solid var(--amarelo); padding-bottom: 10px; }
         .tela { display: none; }
         .ativa { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Botões das Áreas */
-        .btn-menu { width: 100%; padding: 22px; margin: 10px 0; border: none; border-radius: 15px; font-size: 1.2rem; font-weight: bold; color: white; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn-menu:active { transform: scale(0.98); }
-        
+        .btn-menu { width: 100%; padding: 20px; margin: 8px 0; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: bold; color: white; cursor: pointer; transition: 0.3s; }
         .bg-med { background: var(--azul); }
         .bg-enf { background: var(--verde); }
         .bg-odo { background: var(--laranja); }
         .bg-ss { background: var(--roxo); }
 
-        /* Estilo da Chamada */
         .info-topo { background: #f8f9fa; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-weight: bold; color: var(--dark); border-left: 6px solid var(--amarelo); display: flex; justify-content: space-between; align-items: center; }
         input[type="text"] { width: 100%; padding: 18px; border: 3px solid #ced4da; border-radius: 12px; font-size: 1.5rem; box-sizing: border-box; text-transform: uppercase; margin-bottom: 15px; text-align: center; }
         .btn-chamar { width: 100%; padding: 22px; border: none; border-radius: 15px; font-size: 1.4rem; font-weight: bold; color: white; cursor: pointer; background: var(--dark); }
         
-        /* Rechamado */
-        .card-rechamado { background: #fff3cd; border: 2px dashed #856404; padding: 15px; border-radius: 15px; margin-top: 20px; }
-        .btn-rechamar { background: #856404; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; font-size: 1rem; }
+        /* Estilo do Card de Rechamada com Horário */
+        .card-rechamado { background: #fff3cd; border: 2px dashed #856404; padding: 15px; border-radius: 15px; margin-top: 20px; color: #856404; }
+        .hora-marca { font-size: 0.85rem; background: #856404; color: white; padding: 2px 8px; border-radius: 5px; margin-left: 5px; }
+        .btn-rechamar { background: #856404; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 1rem; }
         
-        .btn-voltar { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; margin-top: 15px; font-size: 0.9rem; }
+        .btn-voltar { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -46,7 +43,7 @@
     <h2>CRS AERO RANCHO</h2>
 
     <div id="tela-areas" class="tela ativa">
-        <p style="font-weight: bold; color: #555;">QUAL É A SUA ÁREA?</p>
+        <p><strong>QUAL É A SUA ÁREA?</strong></p>
         <button class="btn-menu bg-med" onclick="abrirSalas('medico')">MÉDICO(A)</button>
         <button class="btn-menu bg-enf" onclick="abrirSalas('enfermagem')">ENFERMAGEM</button>
         <button class="btn-menu bg-odo" onclick="abrirSalas('odonto')">ODONTOLOGIA</button>
@@ -54,7 +51,7 @@
     </div>
 
     <div id="tela-salas" class="tela">
-        <p style="font-weight: bold; color: #555;">EM QUAL SALA VOCÊ ESTÁ?</p>
+        <p><strong>EM QUAL SALA VOCÊ ESTÁ?</strong></p>
         <div id="lista-med" class="grupo-salas" style="display:none;">
             <button class="btn-menu bg-med" onclick="configurar('Consultório 01')">Consultório 01</button>
             <button class="btn-menu bg-med" onclick="configurar('Consultório 02')">Consultório 02</button>
@@ -64,17 +61,17 @@
         <div id="lista-enf" class="grupo-salas" style="display:none;">
             <button class="btn-menu bg-enf" onclick="configurar('Triagem')">Triagem</button>
             <button class="btn-menu bg-enf" onclick="configurar('Medicação')">Medicação</button>
-            <button class="btn-menu bg-enf" onclick="configurar('Sala de Coleta')">Sala de Coleta</button>
+            <button class="btn-menu bg-enf" onclick="configurar('Sala de Coleta')">Coleta</button>
             <button class="btn-menu bg-enf" onclick="configurar('Reidratação')">Reidratação</button>
         </div>
         <div id="lista-odo" class="grupo-salas" style="display:none;">
-            <button class="btn-menu bg-odo" onclick="configurar('Odontologia 01')">Odontologia 01</button>
-            <button class="btn-menu bg-odo" onclick="configurar('Odontologia 02')">Odontologia 02</button>
+            <button class="btn-menu bg-odo" onclick="configurar('Odontologia 01')">Odonto 01</button>
+            <button class="btn-menu bg-odo" onclick="configurar('Odontologia 02')">Odonto 02</button>
         </div>
         <div id="lista-social" class="grupo-salas" style="display:none;">
             <button class="btn-menu bg-ss" onclick="configurar('Serviço Social')">Serviço Social</button>
         </div>
-        <button class="btn-voltar" onclick="mostrarTela('tela-areas')">← Voltar para Áreas</button>
+        <button class="btn-voltar" onclick="mostrarTela('tela-areas')">← Voltar</button>
     </div>
 
     <div id="tela-chamada" class="tela">
@@ -84,11 +81,12 @@
         </div>
         
         <input type="text" id="nome-paciente" placeholder="NOME DO PACIENTE" autocomplete="off">
-        <button id="btn-acao" class="btn-chamar" onclick="chamar(false)">CHAMAR PACIENTE 🔔</button>
+        <button id="btn-acao" class="btn-chamar" onclick="chamar(false)">CHAMAR 🔔</button>
 
         <div id="bloco-rechamar" class="card-rechamado" style="display:none;">
-            <small>ÚLTIMO CHAMADO:</small><br>
-            <strong id="display-ultimo">---</strong>
+            <div style="margin-bottom:5px;">ÚLTIMA CHAMADA:</div>
+            <strong id="display-ultimo">---</strong> 
+            <span id="hora-ultimo" class="hora-marca">--:--</span>
             <button class="btn-rechamar" onclick="chamar(true)">RECHAMAR AGORA 🔊</button>
         </div>
     </div>
@@ -130,14 +128,17 @@
         document.getElementById('label-sala-ativa').innerText = "📍 " + sala.toUpperCase();
         document.getElementById('btn-acao').style.background = corSessao;
         mostrarTela('tela-chamada');
-        setTimeout(() => document.getElementById('nome-paciente').focus(), 200);
+        setTimeout(() => document.getElementById('nome-paciente').focus(), 300);
     }
 
     function chamar(isRechamado) {
         const input = document.getElementById('nome-paciente');
         const nome = isRechamado ? ultimoNome : input.value.trim().toUpperCase();
 
-        if(!nome) { alert("Digite o nome do paciente!"); return; }
+        if(!nome) return;
+
+        const agora = new Date();
+        const horaFormatada = agora.getHours().toString().padStart(2, '0') + ":" + agora.getMinutes().toString().padStart(2, '0');
 
         db.ref('chamada_atual').set({
             nome: nome,
@@ -146,6 +147,7 @@
         }).then(() => {
             ultimoNome = nome;
             document.getElementById('display-ultimo').innerText = nome;
+            document.getElementById('hora-ultimo').innerText = horaFormatada;
             document.getElementById('bloco-rechamar').style.display = 'block';
             if(!isRechamado) {
                 input.value = "";
@@ -154,9 +156,7 @@
         });
     }
 
-    document.getElementById('nome-paciente').addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') chamar(false);
-    });
+    document.getElementById('nome-paciente').addEventListener('keypress', (e) => { if(e.key === 'Enter') chamar(false); });
 </script>
 </body>
 </html>
