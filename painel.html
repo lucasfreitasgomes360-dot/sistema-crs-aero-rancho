@@ -7,40 +7,30 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { 
-            --azul: #0056b3; --verde: #1e7e34; --laranja: #d35400; 
-            --roxo: #8e44ad; --amarelo: #f1c40f; --dark: #013154;
-        }
+        :root { --azul: #0056b3; --verde: #1e7e34; --laranja: #d35400; --roxo: #8e44ad; --amarelo: #f1c40f; --dark: #013154; }
         body { font-family: 'Segoe UI', sans-serif; background: #e9ecef; margin: 0; padding: 15px; display: flex; justify-content: center; }
         .container { background: white; width: 100%; max-width: 480px; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); text-align: center; }
-        
         h2 { color: var(--dark); margin-bottom: 20px; border-bottom: 3px solid var(--amarelo); padding-bottom: 10px; }
         .tela { display: none; }
         .ativa { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         .btn-menu { width: 100%; padding: 18px; margin: 8px 0; border: none; border-radius: 15px; font-size: 1.1rem; font-weight: bold; color: white; cursor: pointer; transition: 0.3s; }
-        .bg-med { background: var(--azul); }
-        .bg-enf { background: var(--verde); }
-        .bg-odo { background: var(--laranja); }
-        .bg-ss { background: var(--roxo); }
-
+        .btn-menu:active { transform: scale(0.98); }
+        .bg-med { background: var(--azul); } .bg-enf { background: var(--verde); } .bg-odo { background: var(--laranja); } .bg-ss { background: var(--roxo); }
         .info-topo { background: #f8f9fa; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-weight: bold; color: var(--dark); border-left: 6px solid var(--amarelo); display: flex; justify-content: space-between; align-items: center; }
-        input[type="text"] { width: 100%; padding: 18px; border: 3px solid #ced4da; border-radius: 12px; font-size: 1.5rem; box-sizing: border-box; text-transform: uppercase; margin-bottom: 15px; text-align: center; }
-        .btn-chamar { width: 100%; padding: 22px; border: none; border-radius: 15px; font-size: 1.4rem; font-weight: bold; color: white; cursor: pointer; background: var(--dark); }
-        
+        input[type="text"] { width: 100%; padding: 18px; border: 3px solid #ced4da; border-radius: 12px; font-size: 1.5rem; box-sizing: border-box; text-transform: uppercase; margin-bottom: 15px; text-align: center; transition: border-color 0.3s; }
+        input[type="text"]:focus { outline: none; border-color: var(--dark); }
+        .btn-chamar { width: 100%; padding: 22px; border: none; border-radius: 15px; font-size: 1.4rem; font-weight: bold; color: white; cursor: pointer; background: var(--dark); transition: 0.3s; }
+        .btn-chamar:disabled { opacity: 0.7; cursor: not-allowed; }
         .card-rechamado { background: #fff3cd; border: 2px dashed #856404; padding: 15px; border-radius: 15px; margin-top: 20px; color: #856404; }
         .hora-marca { font-size: 0.85rem; background: #856404; color: white; padding: 2px 8px; border-radius: 5px; margin-left: 5px; font-weight: bold; }
         .btn-rechamar { background: #856404; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 1rem; }
-        
         .btn-voltar { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <h2>CRS AERO RANCHO</h2>
-
     <div id="tela-areas" class="tela ativa">
         <p><strong>QUAL É A SUA ÁREA?</strong></p>
         <button class="btn-menu bg-med" onclick="abrirSalas('medico')">MÉDICO(A)</button>
@@ -48,7 +38,6 @@
         <button class="btn-menu bg-odo" onclick="abrirSalas('odonto')">ODONTOLOGIA</button>
         <button class="btn-menu bg-ss" onclick="abrirSalas('social')">SERVIÇO SOCIAL</button>
     </div>
-
     <div id="tela-salas" class="tela">
         <p><strong>EM QUAL SALA VOCÊ ESTÁ?</strong></p>
         <div id="lista-med" class="grupo-salas" style="display:none;">
@@ -73,47 +62,24 @@
         </div>
         <button class="btn-voltar" onclick="mostrarTela('tela-areas')">← Voltar</button>
     </div>
-
     <div id="tela-chamada" class="tela">
-        <div class="info-topo">
-            <span id="label-sala-ativa">SALA</span>
-            <button class="btn-voltar" style="margin:0" onclick="mostrarTela('tela-salas')">Trocar Sala</button>
-        </div>
-        
+        <div class="info-topo"><span id="label-sala-ativa">SALA</span><button class="btn-voltar" style="margin:0" onclick="mostrarTela('tela-salas')">Trocar Sala</button></div>
         <input type="text" id="nome-paciente" placeholder="NOME DO PACIENTE" autocomplete="off">
         <button id="btn-acao" class="btn-chamar" onclick="chamar(false)">CHAMAR PACIENTE 🔔</button>
-
         <div id="bloco-rechamar" class="card-rechamado" style="display:none;">
             <div style="margin-bottom:5px;">ÚLTIMA CHAMADA:</div>
-            <strong id="display-ultimo">---</strong> 
-            <span id="hora-ultimo" class="hora-marca">--:--</span>
-            <button class="btn-rechamar" onclick="chamar(true)">RECHAMAR AGORA 🔊</button>
+            <strong id="display-ultimo">---</strong> <span id="hora-ultimo" class="hora-marca">--:--</span>
+            <button id="btn-rechamar" class="btn-rechamar" onclick="chamar(true)">RECHAMAR AGORA 🔊</button>
         </div>
     </div>
 </div>
-
 <script>
-    const firebaseConfig = { 
-        apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A", 
-        authDomain: "sistema-crs-aero-rancho.firebaseapp.com", 
-        databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com", 
-        projectId: "sistema-crs-aero-rancho", 
-        storageBucket: "sistema-crs-aero-rancho.firebasestorage.app", 
-        messagingSenderId: "543461454068", 
-        appId: "1:543461454068:web:c06dbdab52c065e6962ea1" 
-    };
+    const firebaseConfig = { apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A", authDomain: "sistema-crs-aero-rancho.firebaseapp.com", databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com", projectId: "sistema-crs-aero-rancho", storageBucket: "sistema-crs-aero-rancho.firebasestorage.app", messagingSenderId: "543461454068", appId: "1:543461454068:web:c06dbdab52c065e6962ea1" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    let salaEscolhida = '', corSessao = '', ultimoNome = '';
 
-    let salaEscolhida = '';
-    let corSessao = '';
-    let ultimoNome = '';
-
-    function mostrarTela(id) {
-        document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
-        document.getElementById(id).classList.add('ativa');
-    }
-
+    function mostrarTela(id) { document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa')); document.getElementById(id).classList.add('ativa'); }
     function abrirSalas(area) {
         document.querySelectorAll('.grupo-salas').forEach(g => g.style.display = 'none');
         if(area === 'medico') { document.getElementById('lista-med').style.display = 'block'; corSessao = 'var(--azul)'; }
@@ -122,40 +88,33 @@
         if(area === 'social') { document.getElementById('lista-social').style.display = 'block'; corSessao = 'var(--roxo)'; }
         mostrarTela('tela-salas');
     }
-
     function configurar(sala) {
-        salaEscolhida = sala;
-        document.getElementById('label-sala-ativa').innerText = "📍 " + sala.toUpperCase();
-        document.getElementById('btn-acao').style.background = corSessao;
-        mostrarTela('tela-chamada');
+        salaEscolhida = sala; document.getElementById('label-sala-ativa').innerText = "📍 " + sala.toUpperCase();
+        document.getElementById('btn-acao').style.background = corSessao; mostrarTela('tela-chamada');
         setTimeout(() => document.getElementById('nome-paciente').focus(), 300);
     }
-
     function chamar(isRechamado) {
         const input = document.getElementById('nome-paciente');
         const nome = isRechamado ? ultimoNome : input.value.trim().toUpperCase();
-
         if(!nome) return;
+
+        // Feedback Visual e Anti-Spam
+        const btn = isRechamado ? document.getElementById('btn-rechamar') : document.getElementById('btn-acao');
+        const textoOriginal = btn.innerHTML;
+        btn.innerHTML = "✅ ENVIADO!"; btn.disabled = true;
 
         const agora = new Date();
         const horaFormatada = agora.getHours().toString().padStart(2, '0') + ":" + agora.getMinutes().toString().padStart(2, '0');
 
-        db.ref('chamada_atual').set({
-            nome: nome,
-            local: salaEscolhida,
-            timestamp: Date.now()
-        }).then(() => {
+        db.ref('chamada_atual').set({ nome: nome, local: salaEscolhida, timestamp: Date.now() }).then(() => {
             ultimoNome = nome;
             document.getElementById('display-ultimo').innerText = nome;
             document.getElementById('hora-ultimo').innerText = horaFormatada;
             document.getElementById('bloco-rechamar').style.display = 'block';
-            if(!isRechamado) {
-                input.value = "";
-                input.focus();
-            }
+            if(!isRechamado) { input.value = ""; input.focus(); }
+            setTimeout(() => { btn.innerHTML = textoOriginal; btn.disabled = false; }, 2000); // Restaura o botão após 2s
         });
     }
-
     document.getElementById('nome-paciente').addEventListener('keypress', (e) => { if(e.key === 'Enter') chamar(false); });
 </script>
 </body>
