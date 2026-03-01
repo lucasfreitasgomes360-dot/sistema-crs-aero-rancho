@@ -2,27 +2,43 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Acesso - CRS Aero Rancho</title>
+    <title>Portal - CRS Aero Rancho</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: sans-serif; text-align: center; background: #013154; color: white; padding: 50px 20px; margin: 0; }
-        .container { max-width: 400px; margin: auto; background: white; padding: 30px; border-radius: 15px; color: #333; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        h1 { font-size: 24px; color: #013154; margin-bottom: 5px; }
-        .homenagem { font-size: 12px; color: #666; margin-bottom: 30px; font-weight: bold; }
-        .btn { display: block; padding: 18px; margin: 15px 0; text-decoration: none; color: white; font-weight: bold; border-radius: 8px; font-size: 18px; transition: 0.2s; }
-        .tv { background: #f1c40f; color: #013154; }
-        .painel { background: #27ae60; }
-        .gerencia { background: #e74c3c; }
+        :root { --dark: #013154; --amarelo: #f1c40f; --azul: #0056b3; --verde: #28a745; --roxo: #6f42c1; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e9ecef; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; }
+        .container { background: white; width: 100%; max-width: 450px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        
+        .logo { width: 80px; height: 80px; background: var(--dark); color: var(--amarelo); border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; font-size: 2.5rem; font-weight: bold; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        h1 { color: var(--dark); margin: 0 0 5px 0; font-size: 1.8rem; }
+        p { color: #666; margin-bottom: 30px; font-size: 1rem; }
+
+        .btn-link { display: block; width: 100%; padding: 20px; margin: 12px 0; border: none; border-radius: 15px; font-size: 1.2rem; font-weight: bold; color: white; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; box-sizing: border-box; }
+        .btn-link:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        
+        .btn-tv { background: var(--dark); border-left: 8px solid var(--amarelo); }
+        .btn-painel { background: var(--azul); border-left: 8px solid var(--amarelo); }
+        .btn-gerencia { background: var(--verde); border-left: 8px solid var(--amarelo); }
+        
+        footer { margin-top: 20px; font-size: 0.85rem; color: #888; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>CRS Aero Rancho</h1>
-        <div class="homenagem">Dr. João Pereira da Rosa</div>
-        <p>Selecione o acesso:</p>
-        <a href="tv.html" class="btn tv">🖥️ ABRIR TV (Recepção)</a>
-        <a href="painel.html" class="btn painel">🩺 PAINEL DE CHAMADA</a>
-        <a href="gerencia.html" class="btn gerencia">⚙️ GERÊNCIA / AVISOS</a>
-    </div>
+
+<div class="container">
+    <div class="logo">🏥</div>
+    <h1>CRS Aero Rancho</h1>
+    <p>Selecione o painel de acesso</p>
+
+    <a href="tv.html" class="btn-link btn-tv">📺 TV DA RECEPÇÃO</a>
+    <a href="painel.html" class="btn-link btn-painel">📢 PAINEL DE CHAMADA</a>
+    <a href="gerencia.html" class="btn-link btn-gerencia">⚙️ PAINEL DA GERÊNCIA</a>
+</div>
+
+<footer>
+    Sistema de Gestão de Filas &copy; 2026<br>
+    Unidade Aero Rancho
+</footer>
+
 </body>
 </html>
