@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel de Chamada - CRS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f7f6; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+        select, input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; }
+        button { background: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .re-chamar { background: #2980b9; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; width: auto; font-size: 12px; }
+        .item-hist { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>Chamar Paciente</h2>
+    <select id="setor">
+        <option value="Triagem 01">Triagem 01</option><option value="Triagem 02">Triagem 02</option>
+        <option value="Consultório 01">Consultório 01</option><option value="Consultório 02">Consultório 02</option>
+        <option value="Consultório 03">Consultório 03</option><option value="Consultório 04">Consultório 04</option>
+        <option value="Consultório 05">Consultório 05</option><option value="Odontologia">Odontologia</option>
+        <option value="Serviço Social">Serviço Social</option><option value="Sala de Reidratação">Sala de Reidratação</option>
+        <option value="Coleta">Sala de Coleta</option><option value="Medicação">Sala de Medicação</option><option value="Inalação">Sala de Inalação</option>
+    </select>
+    <input type="text" id="nome" placeholder="Nome do Paciente">
+    <select id="genero"><option value="M">O Paciente</option><option value="F">A Paciente</option></select>
+    <button onclick="enviarChamada()">CHAMAR PACIENTE</button>
+    <div style="margin-top:20px">
+        <h4>Meus Chamados Recentes</h4>
+        <div id="lista-historico"></div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A",
+      authDomain: "sistema-crs-aero-rancho.firebaseapp.com",
+      databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com",
+      projectId: "sistema-crs-aero-rancho",
+      storageBucket: "sistema-crs-aero-rancho.firebasestorage.app",
+      messagingSenderId: "543461454068",
+      appId: "1:543461454068:web:c06dbdab52c065e6962ea1"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function enviarChamada(n = null, g = null) {
+        const nome = n || document.getElementById('nome').value;
+        const local = document.getElementById('setor').value;
+        const genero = g || document.getElementById('genero').value;
+        if(!nome) return alert("Digite o nome!");
+        const dados = { nome, local, genero, timestamp: Date.now() };
+        db.ref('chamada_atual').set(dados);
+        const id = local.replace(/\s+/g, '_').toLowerCase();
+        db.ref(`historico/${id}`).push({ ...dados, hora: new Date().toLocaleTimeString() });
+        document.getElementById('nome').value = "";
+    }
+
+    document.getElementById('setor').onchange = carregarHistorico;
+    function carregarHistorico() {
+        const id = document.getElementById('setor').value.replace(/\s+/g, '_').toLowerCase();
+        db.ref(`historico/${id}`).limitToLast(5).on('value', snap => {
+            let html = "";
+            snap.forEach(i => {
+                const c = i.val();
+                html += `<div class="item-hist"><span>${c.hora} - ${c.nome}</span> <button class="re-chamar" onclick="enviarChamada('${c.nome}','${c.genero}')">Re-chamar</button></div>`;
+            });
+            document.getElementById('lista-historico').innerHTML = html;
+        });
+    }
+    carregarHistorico();
+</script>
+</body>
+</html>
