@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel de Chamada</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f7f6; text-align: center; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 450px; margin: auto; }
+        select, input, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; font-size: 18px; box-sizing: border-box; }
+        button { background: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; }
+        .re-chamar { background: #2980b9; padding: 10px; font-size: 14px; width: auto; margin-left: 10px; }
+        .item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>Chamar Paciente</h2>
+    <select id="setor">
+        <option>Triagem 01</option><option>Triagem 02</option><option>Consultório 01</option>
+        <option>Consultório 02</option><option>Consultório 03</option><option>Consultório 04</option>
+        <option>Consultório 05</option><option>Odontologia</option><option>Serviço Social</option>
+        <option>Sala de Coleta</option><option>Sala de Medicação</option><option>Inalação</option>
+    </select>
+    <input type="text" id="nome" placeholder="NOME DO PACIENTE" autocomplete="off">
+    <button onclick="chamar()">CHAMAR AGORA 🔔</button>
+    <div style="margin-top:30px; text-align: left;">
+        <strong>Recentes deste setor:</strong>
+        <div id="hist"></div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+<script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A",
+      authDomain: "sistema-crs-aero-rancho.firebaseapp.com",
+      databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com",
+      projectId: "sistema-crs-aero-rancho",
+      storageBucket: "sistema-crs-aero-rancho.firebasestorage.app",
+      messagingSenderId: "543461454068",
+      appId: "1:543461454068:web:c06dbdab52c065e6962ea1"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function chamar(n = null) {
+        const nome = n || document.getElementById('nome').value;
+        const local = document.getElementById('setor').value;
+        if(!nome) return alert("Digite o nome!");
+        const dados = { nome, local, timestamp: Date.now() };
+        db.ref('chamada_atual').set(dados);
+        db.ref(`hist/${local.replace(/\s/g,'')}`).push({nome, hora: new Date().toLocaleTimeString()});
+        document.getElementById('nome').value = "";
+    }
+
+    document.getElementById('setor').onchange = atualizarHist;
+    function atualizarHist() {
+        const setor = document.getElementById('setor').value.replace(/\s/g,'');
+        db.ref(`hist/${setor}`).limitToLast(5).on('value', snap => {
+            let h = "";
+            snap.forEach(i => { h += `<div class="item">${i.val().nome} <button class="re-chamar" onclick="chamar('${i.val().nome}')">Re-chamar</button></div>`; });
+            document.getElementById('hist').innerHTML = h;
+        });
+    }
+    atualizarHist();
+</script>
+</body>
+</html>
