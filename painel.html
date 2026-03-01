@@ -7,84 +7,72 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; text-align: center; }
-        .card { background: white; max-width: 500px; margin: auto; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #013154; margin-top: 0; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 1.2rem; box-sizing: border-box; }
-        .grid-setores { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn-setor { padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-size: 14px; }
-        .medico { background: #007bff; } /* Azul */
-        .enfermagem { background: #28a745; } /* Verde */
-        .btn-setor:hover { opacity: 0.8; }
-        .hist { text-align: left; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
-        .item-hist { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dotted #ccc; font-size: 14px; }
+        :root { --azul: #0056b3; --verde: #1e7e34; --amarelo: #f1c40f; }
+        body { font-family: 'Segoe UI', sans-serif; background: #e9ecef; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        h2 { color: #013154; margin-bottom: 20px; border-bottom: 2px solid var(--amarelo); padding-bottom: 10px; }
+        .tela { display: none; }
+        .ativa { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-opcoes { width: 100%; padding: 20px; margin: 10px 0; border: none; border-radius: 12px; font-size: 1.2rem; font-weight: bold; color: white; cursor: pointer; transition: 0.2s; }
+        .bg-med { background: var(--azul); }
+        .bg-enf { background: var(--verde); }
+        .info-locacao { background: #f8f9fa; padding: 10px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid var(--amarelo); font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        input[type="text"] { width: 100%; padding: 20px; border: 3px solid #ced4da; border-radius: 12px; font-size: 1.6rem; box-sizing: border-box; text-transform: uppercase; margin-bottom: 20px; }
+        .btn-chamar { width: 100%; padding: 25px; border: none; border-radius: 12px; font-size: 1.5rem; font-weight: bold; color: white; cursor: pointer; background: #013154; }
+        .btn-voltar { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; }
     </style>
 </head>
 <body>
-
-<div class="card">
-    <h2>Chamar Paciente</h2>
-    <input type="text" id="nome-paciente" placeholder="Nome Completo do Paciente" autocomplete="off">
-    
-    <p><strong>SELECIONE O LOCAL:</strong></p>
-    
-    <div style="color: #007bff; font-weight: bold; margin-bottom: 5px;">ÁREA MÉDICA</div>
-    <div class="grid-setores">
-        <button class="btn-setor medico" onclick="chamar('Consultório 01')">Consultório 01</button>
-        <button class="btn-setor medico" onclick="chamar('Consultório 02')">Consultório 02</button>
-        <button class="btn-setor medico" onclick="chamar('Consultório 03')">Consultório 03</button>
-        <button class="btn-setor medico" onclick="chamar('Consultório 04')">Consultório 04</button>
+<div class="container">
+    <h2>Atendimento CRS</h2>
+    <div id="passo-perfil" class="tela ativa">
+        <p>Selecione sua área:</p>
+        <button class="btn-opcoes bg-med" onclick="selecionarPerfil('medico')">MÉDICO(A)</button>
+        <button class="btn-opcoes bg-enf" onclick="selecionarPerfil('enfermagem')">ENFERMAGEM</button>
     </div>
-
-    <div style="color: #28a745; font-weight: bold; margin-top: 15px; margin-bottom: 5px;">ENFERMAGEM / SALAS</div>
-    <div class="grid-setores">
-        <button class="btn-setor enfermagem" onclick="chamar('Triagem')">Triagem</button>
-        <button class="btn-setor enfermagem" onclick="chamar('Sala de Coleta')">Sala de Coleta</button>
-        <button class="btn-setor enfermagem" onclick="chamar('Medicação')">Medicação</button>
-        <button class="btn-setor enfermagem" onclick="chamar('Reidratação')">Reidratação</button>
+    <div id="passo-sala" class="tela">
+        <p>Em qual sala você está?</p>
+        <div id="lista-salas-med" style="display:none;">
+            <button class="btn-opcoes bg-med" onclick="fixarSala('Consultório 01')">Consultório 01</button>
+            <button class="btn-opcoes bg-med" onclick="fixarSala('Consultório 02')">Consultório 02</button>
+            <button class="btn-opcoes bg-med" onclick="fixarSala('Consultório 03')">Consultório 03</button>
+            <button class="btn-opcoes bg-med" onclick="fixarSala('Consultório 04')">Consultório 04</button>
+        </div>
+        <div id="lista-salas-enf" style="display:none;">
+            <button class="btn-opcoes bg-enf" onclick="fixarSala('Triagem')">Triagem</button>
+            <button class="btn-opcoes bg-enf" onclick="fixarSala('Sala de Coleta')">Sala de Coleta</button>
+            <button class="btn-opcoes bg-enf" onclick="fixarSala('Medicação')">Medicação</button>
+            <button class="btn-opcoes bg-enf" onclick="fixarSala('Reidratação')">Reidratação</button>
+        </div>
+        <button class="btn-voltar" onclick="irPara('passo-perfil')">← Voltar</button>
     </div>
-
-    <div class="hist">
-        <strong>Últimos Chamados:</strong>
-        <div id="lista-painel"></div>
+    <div id="passo-chamar" class="tela">
+        <div class="info-locacao"><span id="display-sala">SALA</span><button class="btn-voltar" onclick="irPara('passo-sala')">Trocar Sala</button></div>
+        <input type="text" id="nome-paciente" placeholder="NOME DO PACIENTE" autocomplete="off">
+        <button id="btn-acao-chamar" class="btn-chamar" onclick="enviarChamada()">CHAMAR AGORA 🔔</button>
+        <p id="feedback" style="margin-top:15px; font-weight:bold; color: var(--verde);"></p>
     </div>
 </div>
-
 <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A",
-      authDomain: "sistema-crs-aero-rancho.firebaseapp.com",
-      databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com",
-      projectId: "sistema-crs-aero-rancho",
-      storageBucket: "sistema-crs-aero-rancho.firebasestorage.app",
-      messagingSenderId: "543461454068",
-      appId: "1:543461454068:web:c06dbdab52c065e6962ea1"
-    };
+    const firebaseConfig = { apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A", authDomain: "sistema-crs-aero-rancho.firebaseapp.com", databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com", projectId: "sistema-crs-aero-rancho", storageBucket: "sistema-crs-aero-rancho.firebasestorage.app", messagingSenderId: "543461454068", appId: "1:543461454068:web:c06dbdab52c065e6962ea1" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
-    function chamar(local) {
-        const nome = document.getElementById('nome-paciente').value.trim();
-        if (!nome) { alert("Por favor, digite o nome do paciente!"); return; }
-
-        const dados = {
-            nome: nome,
-            local: local,
-            timestamp: Date.now()
-        };
-
-        db.ref('chamada_atual').set(dados);
-        document.getElementById('nome-paciente').value = ""; // Limpa campo
-        atualizarHistLocal(nome, local);
+    let perfilAtual = '', salaFixa = '';
+    function irPara(id) { document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa')); document.getElementById(id).classList.add('ativa'); }
+    function selecionarPerfil(p) { perfilAtual = p; document.getElementById('lista-salas-med').style.display = p === 'medico' ? 'block' : 'none'; document.getElementById('lista-salas-enf').style.display = p === 'enfermagem' ? 'block' : 'none'; irPara('passo-sala'); }
+    function fixarSala(s) { salaFixa = s; document.getElementById('display-sala').innerText = "📍 " + s.toUpperCase(); document.getElementById('btn-acao-chamar').style.background = perfilAtual === 'medico' ? 'var(--azul)' : 'var(--verde)'; irPara('passo-chamar'); setTimeout(() => document.getElementById('nome-paciente').focus(), 100); }
+    function enviarChamada() {
+        const input = document.getElementById('nome-paciente');
+        const nome = input.value.trim();
+        if (!nome) { alert("Digite o nome!"); return; }
+        db.ref('chamada_atual').set({ nome: nome.toUpperCase(), local: salaFixa, timestamp: Date.now() }).then(() => {
+            document.getElementById('feedback').innerText = "✅ CHAMADO: " + nome.toUpperCase();
+            input.value = ""; input.focus();
+            setTimeout(() => { document.getElementById('feedback').innerText = ""; }, 3000);
+        });
     }
-
-    function atualizarHistLocal(n, l) {
-        const div = document.getElementById('lista-painel');
-        const item = document.createElement('div');
-        item.className = 'item-hist';
-        item.innerHTML = `<span>${n}</span> <b>${l}</b>`;
-        div.prepend(item);
-    }
+    document.getElementById('nome-paciente').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarChamada(); });
 </script>
 </body>
 </html>
