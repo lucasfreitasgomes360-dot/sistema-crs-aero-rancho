@@ -2,77 +2,108 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Painel de Chamada - CRS Aero Rancho</title>
+    <title>Painel - CRS Aero Rancho</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --azul: #0056b3; --verde: #1e7e34; --amarelo: #f1c40f; }
-        body { font-family: 'Segoe UI', sans-serif; background: #e9ecef; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
-        h2 { color: #013154; margin-bottom: 20px; border-bottom: 2px solid var(--amarelo); padding-bottom: 10px; }
+        :root { --azul: #0056b3; --verde: #1e7e34; --laranja: #d35400; --roxo: #8e44ad; --amarelo: #f1c40f; }
+        body { font-family: 'Segoe UI', sans-serif; background: #e9ecef; margin: 0; padding: 10px; display: flex; justify-content: center; }
+        .container { background: white; width: 100%; max-width: 450px; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
         .tela { display: none; }
         .ativa { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .btn-opcoes { width: 100%; padding: 20px; margin: 10px 0; border: none; border-radius: 12px; font-size: 1.2rem; font-weight: bold; color: white; cursor: pointer; transition: 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .btn-opcoes { width: 100%; padding: 16px; margin: 8px 0; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: bold; color: white; cursor: pointer; transition: 0.2s; }
         .bg-med { background: var(--azul); }
         .bg-enf { background: var(--verde); }
-        .info-locacao { background: #f8f9fa; padding: 10px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid var(--amarelo); font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-        input[type="text"] { width: 100%; padding: 20px; border: 3px solid #ced4da; border-radius: 12px; font-size: 1.6rem; box-sizing: border-box; text-transform: uppercase; margin-bottom: 20px; }
-        .btn-chamar { width: 100%; padding: 25px; border: none; border-radius: 12px; font-size: 1.5rem; font-weight: bold; color: white; cursor: pointer; background: #013154; }
-        .btn-voltar { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; }
+        .bg-odo { background: var(--laranja); }
+        .bg-ss { background: var(--roxo); }
+        input[type="text"] { width: 100%; padding: 15px; border: 3px solid #ced4da; border-radius: 12px; font-size: 1.4rem; box-sizing: border-box; text-transform: uppercase; margin-bottom: 15px; }
+        .btn-chamar { width: 100%; padding: 20px; border: none; border-radius: 12px; font-size: 1.3rem; font-weight: bold; color: white; cursor: pointer; background: #013154; margin-bottom: 10px; }
+        .card-rechamado { background: #fff3cd; border: 2px dashed #ffeeba; padding: 15px; border-radius: 12px; margin-top: 15px; }
+        .btn-rechamar { background: #856404; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 5px; }
+        .btn-voltar { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>Atendimento CRS</h2>
     <div id="passo-perfil" class="tela ativa">
-        <p>Selecione sua área:</p>
+        <h2>Selecione sua Área</h2>
         <button class="btn-opcoes bg-med" onclick="selecionarPerfil('medico')">MÉDICO(A)</button>
         <button class="btn-opcoes bg-enf" onclick="selecionarPerfil('enfermagem')">ENFERMAGEM</button>
+        <button class="btn-opcoes bg-odo" onclick="selecionarPerfil('odonto')">ODONTOLOGIA</button>
+        <button class="btn-opcoes bg-ss" onclick="selecionarPerfil('social')">SERVIÇO SOCIAL</button>
     </div>
+
     <div id="passo-sala" class="tela">
-        <p>Em qual sala você está?</p>
-        <div id="lista-salas-med" style="display:none;">
+        <h3 id="titulo-setor">Escolha seu Local</h3>
+        <div id="lista-med" class="lista-salas" style="display:none;">
             <button class="btn-opcoes bg-med" onclick="fixarSala('Consultório 01')">Consultório 01</button>
             <button class="btn-opcoes bg-med" onclick="fixarSala('Consultório 02')">Consultório 02</button>
             <button class="btn-opcoes bg-med" onclick="fixarSala('Consultório 03')">Consultório 03</button>
-            <button class="btn-opcoes bg-med" onclick="fixarSala('Consultório 04')">Consultório 04</button>
         </div>
-        <div id="lista-salas-enf" style="display:none;">
+        <div id="lista-enf" class="lista-salas" style="display:none;">
             <button class="btn-opcoes bg-enf" onclick="fixarSala('Triagem')">Triagem</button>
-            <button class="btn-opcoes bg-enf" onclick="fixarSala('Sala de Coleta')">Sala de Coleta</button>
             <button class="btn-opcoes bg-enf" onclick="fixarSala('Medicação')">Medicação</button>
-            <button class="btn-opcoes bg-enf" onclick="fixarSala('Reidratação')">Reidratação</button>
+            <button class="btn-opcoes bg-enf" onclick="fixarSala('Sala de Coleta')">Coleta</button>
         </div>
-        <button class="btn-voltar" onclick="irPara('passo-perfil')">← Voltar</button>
+        <div id="lista-odo" class="lista-salas" style="display:none;">
+            <button class="btn-opcoes bg-odo" onclick="fixarSala('Odontologia 01')">Odontologia 01</button>
+            <button class="btn-opcoes bg-odo" onclick="fixarSala('Odontologia 02')">Odontologia 02</button>
+        </div>
+        <div id="lista-social" class="lista-salas" style="display:none;">
+            <button class="btn-opcoes bg-ss" onclick="fixarSala('Serviço Social')">Serviço Social</button>
+        </div>
+        <button class="btn-voltar" onclick="location.reload()">← Início</button>
     </div>
+
     <div id="passo-chamar" class="tela">
-        <div class="info-locacao"><span id="display-sala">SALA</span><button class="btn-voltar" onclick="irPara('passo-sala')">Trocar Sala</button></div>
-        <input type="text" id="nome-paciente" placeholder="NOME DO PACIENTE" autocomplete="off">
-        <button id="btn-acao-chamar" class="btn-chamar" onclick="enviarChamada()">CHAMAR AGORA 🔔</button>
-        <p id="feedback" style="margin-top:15px; font-weight:bold; color: var(--verde);"></p>
+        <div style="font-weight:bold; margin-bottom:10px; color:#013154;">📍 <span id="lab-sala"></span></div>
+        <input type="text" id="nome-paciente" placeholder="NOME DO PACIENTE">
+        <button id="btn-final" class="btn-chamar" onclick="enviar(false)">CHAMAR 🔔</button>
+        
+        <div id="area-rechamar" class="card-rechamado" style="display:none;">
+            <small>RECHAMAR:</small><br>
+            <strong id="ultimo-nome">---</strong>
+            <button class="btn-rechamar" onclick="enviar(true)">CHAMAR NOVAMENTE 🔊</button>
+        </div>
+        <button class="btn-voltar" onclick="irPara('passo-sala')">Trocar Sala</button>
     </div>
 </div>
+
 <script>
     const firebaseConfig = { apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A", authDomain: "sistema-crs-aero-rancho.firebaseapp.com", databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com", projectId: "sistema-crs-aero-rancho", storageBucket: "sistema-crs-aero-rancho.firebasestorage.app", messagingSenderId: "543461454068", appId: "1:543461454068:web:c06dbdab52c065e6962ea1" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let perfilAtual = '', salaFixa = '';
-    function irPara(id) { document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa')); document.getElementById(id).classList.add('ativa'); }
-    function selecionarPerfil(p) { perfilAtual = p; document.getElementById('lista-salas-med').style.display = p === 'medico' ? 'block' : 'none'; document.getElementById('lista-salas-enf').style.display = p === 'enfermagem' ? 'block' : 'none'; irPara('passo-sala'); }
-    function fixarSala(s) { salaFixa = s; document.getElementById('display-sala').innerText = "📍 " + s.toUpperCase(); document.getElementById('btn-acao-chamar').style.background = perfilAtual === 'medico' ? 'var(--azul)' : 'var(--verde)'; irPara('passo-chamar'); setTimeout(() => document.getElementById('nome-paciente').focus(), 100); }
-    function enviarChamada() {
-        const input = document.getElementById('nome-paciente');
-        const nome = input.value.trim();
-        if (!nome) { alert("Digite o nome!"); return; }
-        db.ref('chamada_atual').set({ nome: nome.toUpperCase(), local: salaFixa, timestamp: Date.now() }).then(() => {
-            document.getElementById('feedback').innerText = "✅ CHAMADO: " + nome.toUpperCase();
-            input.value = ""; input.focus();
-            setTimeout(() => { document.getElementById('feedback').innerText = ""; }, 3000);
-        });
+    let perfil = '', sala = '', ultimoChamado = '', corAtual = '#013154';
+
+    function irPara(id) { document.querySelectorAll('.tela').forEach(t=>t.classList.remove('ativa')); document.getElementById(id).classList.add('ativa'); }
+    function selecionarPerfil(p) { 
+        perfil = p; 
+        document.querySelectorAll('.lista-salas').forEach(l => l.style.display = 'none');
+        if(p==='medico') { document.getElementById('lista-med').style.display='block'; corAtual = 'var(--azul)'; }
+        if(p==='enfermagem') { document.getElementById('lista-enf').style.display='block'; corAtual = 'var(--verde)'; }
+        if(p==='odonto') { document.getElementById('lista-odo').style.display='block'; corAtual = 'var(--laranja)'; }
+        if(p==='social') { document.getElementById('lista-social').style.display='block'; corAtual = 'var(--roxo)'; }
+        irPara('passo-sala'); 
     }
-    document.getElementById('nome-paciente').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarChamada(); });
+    function fixarSala(s) { 
+        sala = s; 
+        document.getElementById('lab-sala').innerText = s.toUpperCase(); 
+        document.getElementById('btn-final').style.background = corAtual;
+        irPara('passo-chamar'); 
+        document.getElementById('nome-paciente').focus(); 
+    }
+    function enviar(isRechamado) {
+        const input = document.getElementById('nome-paciente');
+        const nome = isRechamado ? ultimoChamado : input.value.trim().toUpperCase();
+        if(!nome) return;
+        db.ref('chamada_atual').set({ nome: nome, local: sala, timestamp: Date.now() });
+        ultimoChamado = nome;
+        document.getElementById('ultimo-nome').innerText = nome;
+        document.getElementById('area-rechamar').style.display = 'block';
+        if(!isRechamado) { input.value = ""; input.focus(); }
+    }
 </script>
 </body>
 </html>
