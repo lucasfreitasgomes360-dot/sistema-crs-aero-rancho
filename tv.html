@@ -23,19 +23,26 @@
         #chamada-foco { 
             flex: 3; display: flex; flex-direction: column; justify-content: center; 
             align-items: center; text-align: center; padding: 20px; border-right: 2px solid rgba(255,255,255,0.1);
-            transition: all 0.5s;
         }
-        .label-atencao { font-size: 2.5rem; color: #f1c40f; font-weight: bold; letter-spacing: 5px; margin-bottom: 10px; }
+
+        /* Etiquetas de Setor */
+        .badge-setor {
+            font-size: 1.8rem; padding: 10px 40px; border-radius: 10px; font-weight: bold;
+            margin-bottom: 20px; text-transform: uppercase; letter-spacing: 3px;
+        }
+        .setor-medico { background: #007bff; color: white; }
+        .setor-enfermagem { background: #28a745; color: white; }
+
         .paciente-nome { 
             font-size: 7vw; font-weight: 900; text-transform: uppercase; 
-            line-height: 1.1; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); margin: 20px 0; 
+            line-height: 1.1; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); margin: 15px 0; 
         }
         .local-destino { 
-            font-size: 3.5vw; background: rgba(255,255,255,0.1); padding: 15px 50px; 
+            font-size: 3.5vw; background: rgba(255,255,255,0.1); padding: 10px 50px; 
             border-radius: 50px; border: 2px solid #f1c40f; 
         }
 
-        /* Estilo para os Recados no Centro */
+        /* Estilo para Recados */
         .recado-titulo { font-size: 2.5rem; color: #f1c40f; margin-bottom: 20px; text-transform: uppercase; }
         .recado-texto { font-size: 4vw; font-weight: bold; max-width: 90%; line-height: 1.2; }
 
@@ -43,12 +50,10 @@
         .hist-titulo { font-size: 1.5rem; color: #f1c40f; border-bottom: 2px solid #f1c40f; padding-bottom: 10px; margin-bottom: 15px; }
         .hist-item { 
             background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; 
-            margin-bottom: 10px; border-left: 5px solid #f1c40f; animation: slideIn 0.5s ease;
+            margin-bottom: 10px; border-left: 5px solid #f1c40f;
         }
-        .hist-nome { font-size: 1.4rem; font-weight: bold; display: block; text-transform: uppercase; }
-        .hist-local { font-size: 1.1rem; opacity: 0.8; }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .hist-nome { font-size: 1.3rem; font-weight: bold; display: block; text-transform: uppercase; }
+        .hist-local { font-size: 1rem; opacity: 0.8; }
 
         footer { background: #e74c3c; height: 60px; display: flex; align-items: center; overflow: hidden; }
         .marquee { white-space: nowrap; font-size: 1.8rem; font-weight: bold; animation: scroll 25s linear infinite; width: 100%; }
@@ -75,8 +80,8 @@
 <div class="layout-principal">
     <main id="chamada-foco">
         <div id="conteudo-central">
-            <div class="label-atencao">BEM-VINDO</div>
-            <div class="paciente-nome">CRS AERO RANCHO</div>
+            <div class="recado-titulo">BEM-VINDO</div>
+            <div class="recado-texto">CRS AERO RANCHO</div>
         </div>
     </main>
 
@@ -86,9 +91,7 @@
     </aside>
 </div>
 
-<footer>
-    <div class="marquee" id="tv-avisos">Mantenha o respeito e o silêncio na unidade.</div>
-</footer>
+<footer><div class="marquee" id="tv-avisos">Bem-vindo à unidade.</div></footer>
 
 <script>
     const firebaseConfig = {
@@ -105,16 +108,13 @@
     
     const bell = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     let fila = [], ocupado = false, ativo = false, historico = [];
-    let tempoLimpezaNome;
+    let tempoLimpeza;
     let intervaloRecados;
 
-    // Lista de recados para o carrossel central
-    const recadosSaude = [
-        { titulo: "Atendimento", texto: "O atendimento obedece à Classificação de Risco." },
-        { titulo: "Documentação", texto: "Tenha em mãos seu Cartão do SUS e documento com foto." },
-        { titulo: "Prevenção", texto: "Lave as mãos com frequência. A higiene previne doenças." },
-        { titulo: "Hidratação", texto: "Beba água regularmente durante sua espera." },
-        { titulo: "Dengue", texto: "Não deixe água parada. Combata o mosquito em sua casa." }
+    const recados = [
+        { titulo: "Atendimento", texto: "Respeite a Classificação de Risco." },
+        { titulo: "Aviso", texto: "Mantenha o silêncio para ouvir sua chamada." },
+        { titulo: "Higiene", texto: "Lave as mãos e use álcool em gel." }
     ];
     let indiceRecado = 0;
 
@@ -122,21 +122,21 @@
         ativo = true; 
         document.getElementById('overlay').style.display = 'none'; 
         bell.play().catch(e => {}); 
-        iniciarCarrosselRecados();
+        iniciarCarrossel();
     }
 
-    function iniciarCarrosselRecados() {
+    function iniciarCarrossel() {
         if (intervaloRecados) clearInterval(intervaloRecados);
         intervaloRecados = setInterval(() => {
             if (!ocupado) {
-                const recado = recadosSaude[indiceRecado];
+                const r = recados[indiceRecado];
                 document.getElementById('chamada-foco').innerHTML = `
-                    <div class="recado-titulo">${recado.titulo}</div>
-                    <div class="recado-texto">${recado.texto}</div>
+                    <div class="recado-titulo">${r.titulo}</div>
+                    <div class="recado-texto">${r.texto}</div>
                 `;
-                indiceRecado = (indiceRecado + 1) % recadosSaude.length;
+                indiceRecado = (indiceRecado + 1) % recados.length;
             }
-        }, 8000); // Troca de recado a cada 8 segundos
+        }, 8000);
     }
 
     setInterval(() => { 
@@ -151,48 +151,42 @@
         }
     });
 
-    db.ref('avisos').on('value', snap => { 
-        if(snap.val()) document.getElementById('tv-avisos').innerText = snap.val(); 
-    });
+    db.ref('avisos').on('value', snap => { if(snap.val()) document.getElementById('tv-avisos').innerText = snap.val(); });
 
     function processar() {
-        if (fila.length === 0 || !ativo) { 
-            ocupado = false; 
-            return; 
-        }
+        if (fila.length === 0 || !ativo) { ocupado = false; return; }
         ocupado = true;
         const item = fila.shift();
+        clearTimeout(tempoLimpeza);
 
-        // Para o carrossel e mostra o nome instantaneamente
-        clearTimeout(tempoLimpezaNome);
-        
+        // Lógica de separação de setores
+        let localLower = item.local.toLowerCase();
+        let categoria = "ENFERMAGEM";
+        let classeCor = "setor-enfermagem";
+
+        if (localLower.includes("consultório") || localLower.includes("médico")) {
+            categoria = "MÉDICOS";
+            classeCor = "setor-medico";
+        }
+
         document.getElementById('chamada-foco').innerHTML = `
-            <div class="label-atencao">ATENÇÃO</div>
+            <div class="badge-setor ${classeCor}">${categoria}</div>
             <div class="paciente-nome">${item.nome}</div>
             <div class="local-destino">${item.local}</div>
         `;
 
         atualizarHistorico(item.nome, item.local);
-
         bell.play();
+
         setTimeout(() => {
-            const prep = ["triagem", "sala", "coleta", "medicação", "inalação", "odontologia", "social"].some(x => item.local.toLowerCase().includes(x)) ? "à" : "ao";
+            const prep = ["triagem", "sala", "coleta", "medicação", "inalação", "odontologia", "social", "reidratação"].some(x => localLower.includes(x)) ? "à" : "ao";
             const fala = new SpeechSynthesisUtterance(`Atenção... Paciente... ${item.nome}... dirija-se ${prep} ${item.local}`);
-            fala.lang = 'pt-BR'; 
-            fala.rate = 0.8;
+            fala.lang = 'pt-BR'; fala.rate = 0.8;
             window.speechSynthesis.speak(fala);
             
             fala.onend = () => { 
-                // Após a fala, espera 5 segundos antes de voltar para os recados
-                tempoLimpezaNome = setTimeout(() => {
-                    ocupado = false;
-                }, 5000);
-                
-                // Se houver mais gente na fila, chama o próximo
-                if (fila.length > 0) {
-                    clearTimeout(tempoLimpezaNome);
-                    setTimeout(processar, 2000);
-                }
+                tempoLimpeza = setTimeout(() => { ocupado = false; }, 5000);
+                if (fila.length > 0) { clearTimeout(tempoLimpeza); setTimeout(processar, 2000); }
             };
         }, 1300);
     }
@@ -200,8 +194,7 @@
     function atualizarHistorico(nome, local) {
         historico.unshift({nome, local});
         if(historico.length > 4) historico.pop();
-        const lista = document.getElementById('lista-hist');
-        lista.innerHTML = historico.map(h => `
+        document.getElementById('lista-hist').innerHTML = historico.map(h => `
             <div class="hist-item">
                 <span class="hist-nome">${h.nome}</span>
                 <span class="hist-local">${h.local}</span>
