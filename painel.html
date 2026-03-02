@@ -18,8 +18,7 @@
         .btn-menu:active { transform: scale(0.98); }
         .bg-med { background: var(--azul); } .bg-enf { background: var(--verde); } .bg-odo { background: var(--laranja); } .bg-ss { background: var(--roxo); }
         .info-topo { background: #f8f9fa; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-weight: bold; color: var(--dark); border-left: 6px solid var(--amarelo); display: flex; justify-content: space-between; align-items: center; }
-        input[type="text"] { width: 100%; padding: 18px; border: 3px solid #ced4da; border-radius: 12px; font-size: 1.5rem; box-sizing: border-box; text-transform: uppercase; margin-bottom: 15px; text-align: center; transition: border-color 0.3s; }
-        input[type="text"]:focus { outline: none; border-color: var(--dark); }
+        input[type="text"] { width: 100%; padding: 18px; border: 3px solid #ced4da; border-radius: 12px; font-size: 1.5rem; box-sizing: border-box; text-transform: uppercase; margin-bottom: 15px; text-align: center; }
         .btn-chamar { width: 100%; padding: 22px; border: none; border-radius: 15px; font-size: 1.4rem; font-weight: bold; color: white; cursor: pointer; background: var(--dark); transition: 0.3s; }
         .btn-chamar:disabled { opacity: 0.7; cursor: not-allowed; }
         .card-rechamado { background: #fff3cd; border: 2px dashed #856404; padding: 15px; border-radius: 15px; margin-top: 20px; color: #856404; }
@@ -45,6 +44,7 @@
             <button class="btn-menu bg-med" onclick="configurar('Consultório 02')">Consultório 02</button>
             <button class="btn-menu bg-med" onclick="configurar('Consultório 03')">Consultório 03</button>
             <button class="btn-menu bg-med" onclick="configurar('Consultório 04')">Consultório 04</button>
+            <button class="btn-menu bg-med" onclick="configurar('Consultório 05')">Consultório 05</button>
         </div>
         <div id="lista-enf" class="grupo-salas" style="display:none;">
             <button class="btn-menu bg-enf" onclick="configurar('Triagem 01')">Triagem 01</button>
@@ -97,22 +97,18 @@
         const input = document.getElementById('nome-paciente');
         const nome = isRechamado ? ultimoNome : input.value.trim().toUpperCase();
         if(!nome) return;
-
-        // Feedback Visual e Anti-Spam
         const btn = isRechamado ? document.getElementById('btn-rechamar') : document.getElementById('btn-acao');
         const textoOriginal = btn.innerHTML;
         btn.innerHTML = "✅ ENVIADO!"; btn.disabled = true;
-
         const agora = new Date();
         const horaFormatada = agora.getHours().toString().padStart(2, '0') + ":" + agora.getMinutes().toString().padStart(2, '0');
-
         db.ref('chamada_atual').set({ nome: nome, local: salaEscolhida, timestamp: Date.now() }).then(() => {
             ultimoNome = nome;
             document.getElementById('display-ultimo').innerText = nome;
             document.getElementById('hora-ultimo').innerText = horaFormatada;
             document.getElementById('bloco-rechamar').style.display = 'block';
             if(!isRechamado) { input.value = ""; input.focus(); }
-            setTimeout(() => { btn.innerHTML = textoOriginal; btn.disabled = false; }, 2000); // Restaura o botão após 2s
+            setTimeout(() => { btn.innerHTML = textoOriginal; btn.disabled = false; }, 2000);
         });
     }
     document.getElementById('nome-paciente').addEventListener('keypress', (e) => { if(e.key === 'Enter') chamar(false); });
