@@ -2,75 +2,29 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerência - CRS Aero Rancho</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerência CRS</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #e9ecef; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        h2 { color: #013154; margin-top: 0; border-bottom: 3px solid #f1c40f; padding-bottom: 10px; text-align: center; }
-        label { font-weight: bold; color: #555; display: block; margin-bottom: 10px; }
-        textarea { width: 100%; padding: 15px; border: 3px solid #ced4da; border-radius: 12px; font-size: 1.2rem; box-sizing: border-box; resize: none; margin-bottom: 15px; }
-        .btn-enviar { width: 100%; padding: 20px; border: none; border-radius: 12px; font-size: 1.3rem; font-weight: bold; color: white; cursor: pointer; background: #28a745; transition: 0.3s; margin-bottom: 20px;}
-        .btn-enviar:hover { background: #218838; }
-        .aviso-atual { background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #0056b3; font-size: 1.1rem; margin-bottom: 25px; color: #333; }
-        
-        .botoes-rapidos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-rapido { background: #013154; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-rapido:hover { background: #0056b3; }
-        #feedback { text-align: center; font-weight: bold; color: #28a745; margin-top: 10px; height: 20px; }
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; text-align: center; }
+        textarea { width: 90%; height: 100px; padding: 15px; border-radius: 10px; font-size: 1.2rem; }
+        button { padding: 15px 30px; margin: 10px; cursor: pointer; font-weight: bold; border-radius: 10px; border: none; }
+        .btn-enviar { background: #28a745; color: white; width: 90%; }
+        .btn-preset { background: #e74c3c; color: white; }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2>Painel da Gerência</h2>
-    
-    <div class="aviso-atual">
-        <small>Rodando na TV agora:</small><br>
-        <strong id="texto-ativo">Carregando...</strong>
-    </div>
+    <h1>CONTROLE DE AVISOS - TV</h1>
+    <textarea id="texto-aviso" placeholder="Digite o aviso para a TV aqui..."></textarea><br>
+    <button class="btn-enviar" onclick="enviar()">ATUALIZAR LETREIRO TV 🚀</button><br>
+    <button class="btn-preset" onclick="preset('📢 ATENÇÃO: TROCA DE PLANTÃO EM ANDAMENTO.')">Troca Plantão</button>
+    <button class="btn-preset" onclick="preset('⚠️ EMERGÊNCIA: ATENDIMENTOS PODEM DEMORAR.')">Emergência</button>
 
-    <label>Digitar Novo Aviso para a TV:</label>
-    <textarea id="novo-aviso" rows="3" placeholder="Digite a mensagem que vai rolar no rodapé da TV..."></textarea>
-    <button class="btn-enviar" onclick="enviarAviso()">🚀 ATUALIZAR TV</button>
-
-    <label>Respostas Rápidas:</label>
-    <div class="botoes-rapidos">
-        <button class="btn-rapido" onclick="setAvisoRapido('Aguarde sua vez. Atendimento conforme Classificação de Risco.')">Atendimento Normal</button>
-        <button class="btn-rapido" onclick="setAvisoRapido('Troca de plantão em andamento. Agradecemos a compreensão.')">Troca de Plantão</button>
-        <button class="btn-rapido" onclick="setAvisoRapido('Emergência médica em andamento. O tempo de espera pode ser maior.')">Emergência</button>
-        <button class="btn-rapido" onclick="setAvisoRapido('Sistema inoperante. Atendimento manual em andamento.')">Sistema Fora</button>
-    </div>
-    
-    <div id="feedback"></div>
-</div>
-
-<script>
-    const firebaseConfig = { apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A", authDomain: "sistema-crs-aero-rancho.firebaseapp.com", databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com", projectId: "sistema-crs-aero-rancho", storageBucket: "sistema-crs-aero-rancho.firebasestorage.app", messagingSenderId: "543461454068", appId: "1:543461454068:web:c06dbdab52c065e6962ea1" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // Fica lendo o que está rolando na TV agora
-    db.ref('avisos').on('value', snap => {
-        if(snap.val()) document.getElementById('texto-ativo').innerText = snap.val();
-    });
-
-    function enviarAviso() {
-        const txt = document.getElementById('novo-aviso').value.trim();
-        if(!txt) { alert("Digite um aviso!"); return; }
-        salvarNoFirebase(txt);
-        document.getElementById('novo-aviso').value = "";
-    }
-
-    function setAvisoRapido(txt) { salvarNoFirebase(txt); }
-
-    function salvarNoFirebase(txt) {
-        db.ref('avisos').set(txt).then(() => {
-            document.getElementById('feedback').innerText = "✅ Aviso atualizado na TV!";
-            setTimeout(() => document.getElementById('feedback').innerText = "", 3000);
-        });
-    }
-</script>
+    <script>
+        const firebaseConfig = { apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A", authDomain: "sistema-crs-aero-rancho.firebaseapp.com", databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com", projectId: "sistema-crs-aero-rancho", storageBucket: "sistema-crs-aero-rancho.firebasestorage.app", messagingSenderId: "543461454068", appId: "1:543461454068:web:c06dbdab52c065e6962ea1" };
+        firebase.initializeApp(firebaseConfig); const db = firebase.database();
+        function enviar() { db.ref('avisos').set(document.getElementById('texto-aviso').value); }
+        function preset(t) { document.getElementById('texto-aviso').value = t; enviar(); }
+    </script>
 </body>
 </html>
