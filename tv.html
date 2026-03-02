@@ -17,11 +17,12 @@
         .local { font-size: 4.5vw; background: rgba(255,255,255,0.1); padding: 15px 60px; border-radius: 60px; border: 3px solid #f1c40f; font-weight: bold; }
         #historico { flex: 1; background: rgba(0,0,0,0.2); padding: 20px; }
         .hist-titulo { text-align: center; font-size: 1.5rem; color: #f1c40f; margin-bottom: 15px; font-weight: bold; border-bottom: 2px solid rgba(255,255,255,0.1); }
-        .hist-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 6px solid #f1c40f; }
+        .hist-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 6px solid #f1c40f; animation: fadeInRight 0.3s ease forwards; }
+        @keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
         footer { background: #e74c3c; height: 65px; display: flex; align-items: center; overflow: hidden; }
         .marquee { white-space: nowrap; font-size: 2.2rem; font-weight: bold; animation: scroll 25s linear infinite; width: 100%; }
         @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #013154; z-index: 1000; display: flex; justify-content: center; align-items: center; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #013154; z-index: 1000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -42,52 +43,72 @@
     const db = firebase.database();
     const bell = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     
-    let ocupado = false, ativo = false, iRec = 0, hist = [], ultimaChamadaId = 0, fila = [];
+    let ocupado = false, ativo = false, iRec = 0, hist = [], ultimaId = 0, filaChamadas = [];
     const recados = [{t:"DENGUE", x:"Elimine criadouros de mosquitos."}, {t:"ATENÇÃO", x:"Acompanhe o painel para a sua chamada."}, {t:"SAÚDE", x:"Lave as mãos com frequência."}];
 
-    function iniciar() { ativo = true; document.getElementById('overlay').style.display='none'; carrossel(); setInterval(carrossel, 8000); }
+    function iniciar() { 
+        ativo = true; 
+        document.getElementById('overlay').style.display='none'; 
+        carrossel(); 
+        setInterval(() => { if(!ocupado && filaChamadas.length === 0) carrossel(); }, 8000); 
+    }
     
     function carrossel() { 
-        if(!ocupado && ativo && fila.length === 0) { 
-            const r = recados[iRec]; 
-            document.getElementById('foco').innerHTML = `<h2 style="color:#f1c40f; font-size:3.5rem;">${r.t}</h2><p style="font-size:4.5vw; font-weight:bold;">${r.x}</p>`; 
-            iRec = (iRec + 1) % recados.length; 
-        } 
+        if(ocupado || filaChamadas.length > 0) return;
+        const r = recados[iRec]; 
+        document.getElementById('foco').innerHTML = `<h2 style="color:#f1c40f; font-size:3.5rem;">${r.t}</h2><p style="font-size:4.5vw; font-weight:bold;">${r.x}</p>`; 
+        document.getElementById('foco').className = '';
+        iRec = (iRec + 1) % recados.length; 
     }
     
     setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}); }, 1000);
     db.ref('avisos').on('value', snap => { if(snap.val()) document.getElementById('tv-avisos').innerText = snap.val(); });
 
+    // ESCUTA O FIREBASE E COLOCA NA FILA
     db.ref('chamada_atual').on('value', snap => { 
         const d = snap.val(); 
-        if(d && d.timestamp !== ultimaChamadaId) {
-            ultimaChamadaId = d.timestamp;
-            fila.push(d);
-            if(!ocupado) processar();
+        if(d && d.timestamp !== ultimaId) {
+            ultimaId = d.timestamp;
+            filaChamadas.push(d);
+            if(!ocupado) processarProxima();
         } 
     });
 
-    async function processar() {
-        if(fila.length === 0) { ocupado = false; carrossel(); return; }
+    function processarProxima() {
+        if(filaChamadas.length === 0) {
+            ocupado = false;
+            setTimeout(carrossel, 5000); // Volta carrossel após 5s de silêncio
+            return;
+        }
+
         ocupado = true;
-        const item = fila.shift();
+        const item = filaChamadas.shift();
+        
         let cor = "#007bff", setor = "MÉDICOS";
         if(item.local.match(/Triagem|Medicação|Coleta|Reidratação/i)) { cor = "#28a745"; setor = "ENFERMAGEM"; }
         else if(item.local.match(/Odonto/i)) { cor = "#d35400"; setor = "ODONTOLOGIA"; }
         else if(item.local.match(/Social/i)) { cor = "#8e44ad"; setor = "SERVIÇO SOCIAL"; }
 
-        document.getElementById('foco').innerHTML = `<div class="badge" style="background:${cor}">${setor}</div><div class="paciente">${item.nome}</div><div class="local">${item.local}</div>`;
+        // Atualiza TV e Histórico
+        const foco = document.getElementById('foco');
+        foco.className = 'chamada-ativa';
+        foco.innerHTML = `<div class="badge" style="background:${cor}">${setor}</div><div class="paciente">${item.nome}</div><div class="local">${item.local}</div>`;
         
         hist.unshift(item); if(hist.length > 5) hist.pop();
         document.getElementById('lista-hist').innerHTML = hist.map(h => `<div class="hist-item"><b>${h.nome}</b><br><small style="color:#f1c40f">${h.local}</small></div>`).join('');
         
+        // Sequência de Som e Voz
         bell.play();
         setTimeout(() => {
             const f = new SpeechSynthesisUtterance(`Atenção, paciente ${item.nome}. Compareça à ${item.local}`);
             f.lang = 'pt-BR'; f.rate = 0.9;
-            f.onend = () => { setTimeout(() => { processar(); }, 6000); };
+            
+            // Quando terminar de falar este nome, espera 4 segundos e tenta o próximo da fila
+            f.onend = () => {
+                setTimeout(processarProxima, 4000);
+            };
             window.speechSynthesis.speak(f);
-        }, 1500);
+        }, 1200);
     }
 </script>
 </body>
