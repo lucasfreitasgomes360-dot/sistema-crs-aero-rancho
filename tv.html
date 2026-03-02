@@ -9,25 +9,19 @@
         body { background: #013154; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         header { background: white; color: #013154; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid #f1c40f; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10;}
         .layout { display: flex; flex: 1; overflow: hidden; }
-        
         #foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-right: 2px solid rgba(255,255,255,0.1); padding: 20px; box-sizing: border-box; }
         .chamada-ativa { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes popIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
-
-        .badge { font-size: 2.2rem; padding: 10px 50px; border-radius: 12px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .paciente { font-size: clamp(3rem, 6.5vw, 7.5rem); font-weight: 900; text-transform: uppercase; margin: 15px 0; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); letter-spacing: 2px; max-width: 95%; word-wrap: break-word; line-height: 1.1; }
-        .local { font-size: 4.5vw; background: rgba(255,255,255,0.1); padding: 15px 60px; border-radius: 60px; border: 3px solid #f1c40f; font-weight: bold; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); margin-top: 10px; }
-        
-        /* HISTÓRICO CRONOLÓGICO (ESTILO ANTERIOR) */
-        #historico { flex: 1; background: rgba(0,0,0,0.2); padding: 20px; display: flex; flex-direction: column; }
-        .hist-titulo { text-align: center; font-size: 1.5rem; color: #f1c40f; margin-bottom: 15px; font-weight: bold; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .hist-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 6px solid #f1c40f; animation: fadeInRight 0.5s ease; }
-        @keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-
-        footer { background: #e74c3c; height: 65px; display: flex; align-items: center; overflow: hidden; z-index: 10; }
+        .badge { font-size: 2.2rem; padding: 10px 50px; border-radius: 12px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; color: white; }
+        .paciente { font-size: clamp(3rem, 6.5vw, 7.5rem); font-weight: 900; text-transform: uppercase; margin: 15px 0; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); line-height: 1.1; max-width: 95%; word-wrap: break-word; }
+        .local { font-size: 4.5vw; background: rgba(255,255,255,0.1); padding: 15px 60px; border-radius: 60px; border: 3px solid #f1c40f; font-weight: bold; }
+        #historico { flex: 1; background: rgba(0,0,0,0.2); padding: 20px; }
+        .hist-titulo { text-align: center; font-size: 1.5rem; color: #f1c40f; margin-bottom: 15px; font-weight: bold; border-bottom: 2px solid rgba(255,255,255,0.1); }
+        .hist-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 6px solid #f1c40f; }
+        footer { background: #e74c3c; height: 65px; display: flex; align-items: center; overflow: hidden; }
         .marquee { white-space: nowrap; font-size: 2.2rem; font-weight: bold; animation: scroll 25s linear infinite; width: 100%; }
         @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #013154; z-index: 1000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #013154; z-index: 1000; display: flex; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
@@ -48,96 +42,52 @@
     const db = firebase.database();
     const bell = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     
-    let ocupado = false, ativo = false, iRec = 0, hist = [];
-    let ultimaChamadaId = 0;
-    let filaChamadas = [];
+    let ocupado = false, ativo = false, iRec = 0, hist = [], ultimaChamadaId = 0, fila = [];
+    const recados = [{t:"DENGUE", x:"Elimine criadouros de mosquitos."}, {t:"ATENÇÃO", x:"Acompanhe o painel para a sua chamada."}, {t:"SAÚDE", x:"Lave as mãos com frequência."}];
 
-    const recados = [
-        {t:"DENGUE", x:"Elimine criadouros de mosquitos. Use repelente."},
-        {t:"ATENÇÃO", x:"Acompanhe o painel para a sua chamada."},
-        {t:"SAÚDE", x:"Lave as mãos com frequência."}
-    ];
-
-    function iniciar() { 
-        ativo = true; 
-        document.getElementById('overlay').style.display='none'; 
-        carrossel(); 
-        setInterval(carrossel, 8000); 
-    }
+    function iniciar() { ativo = true; document.getElementById('overlay').style.display='none'; carrossel(); setInterval(carrossel, 8000); }
     
     function carrossel() { 
-        if(!ocupado && ativo && filaChamadas.length === 0) { 
+        if(!ocupado && ativo && fila.length === 0) { 
             const r = recados[iRec]; 
-            const foco = document.getElementById('foco');
-            foco.innerHTML = `<h2 style="color:#f1c40f; font-size:3.5rem;">${r.t}</h2><p style="font-size:4.5vw; font-weight:bold;">${r.x}</p>`; 
-            foco.className = ''; 
+            document.getElementById('foco').innerHTML = `<h2 style="color:#f1c40f; font-size:3.5rem;">${r.t}</h2><p style="font-size:4.5vw; font-weight:bold;">${r.x}</p>`; 
             iRec = (iRec + 1) % recados.length; 
         } 
     }
     
-    setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
+    setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}); }, 1000);
     db.ref('avisos').on('value', snap => { if(snap.val()) document.getElementById('tv-avisos').innerText = snap.val(); });
 
     db.ref('chamada_atual').on('value', snap => { 
         const d = snap.val(); 
         if(d && d.timestamp !== ultimaChamadaId) {
             ultimaChamadaId = d.timestamp;
-            filaChamadas.push(d);
-            if(!ocupado) processarFila();
+            fila.push(d);
+            if(!ocupado) processar();
         } 
     });
 
-    async function processarFila() {
-        if (filaChamadas.length === 0 || !ativo) {
-            ocupado = false;
-            carrossel();
-            return;
-        }
-
+    async function processar() {
+        if(fila.length === 0) { ocupado = false; carrossel(); return; }
         ocupado = true;
-        const item = filaChamadas.shift();
-        
-        let local = item.local.toLowerCase();
-        let cor = "#007bff", setorNome = "MÉDICOS";
-        
-        if(local.includes("triagem") || local.includes("medicação") || local.includes("coleta") || local.includes("reidratação")) { 
-            cor = "#28a745"; setorNome = "ENFERMAGEM";
-        } else if(local.includes("odontologia")) { 
-            cor = "#d35400"; setorNome = "ODONTOLOGIA";
-        } else if(local.includes("social")) { 
-            cor = "#8e44ad"; setorNome = "SERVIÇO SOCIAL";
-        }
+        const item = fila.shift();
+        let cor = "#007bff", setor = "MÉDICOS";
+        if(item.local.match(/Triagem|Medicação|Coleta|Reidratação/i)) { cor = "#28a745"; setor = "ENFERMAGEM"; }
+        else if(item.local.match(/Odonto/i)) { cor = "#d35400"; setor = "ODONTOLOGIA"; }
+        else if(item.local.match(/Social/i)) { cor = "#8e44ad"; setor = "SERVIÇO SOCIAL"; }
 
-        // Atualiza Histórico Cronológico Lateral
+        document.getElementById('foco').innerHTML = `<div class="badge" style="background:${cor}">${setor}</div><div class="paciente">${item.nome}</div><div class="local">${item.local}</div>`;
+        
         hist.unshift(item); if(hist.length > 5) hist.pop();
-        document.getElementById('lista-hist').innerHTML = hist.map(h => `
-            <div class="hist-item">
-                <b style="text-transform: uppercase;">${h.nome}</b><br>
-                <small style="color:#f1c40f">${h.local}</small>
-            </div>`).join('');
-
-        // Visual na Tela Principal
-        const foco = document.getElementById('foco');
-        foco.className = 'chamada-ativa';
-        foco.innerHTML = `<div class="badge" style="background:${cor}">${setorNome}</div><div class="paciente">${item.nome}</div><div class="local">${item.local}</div>`;
+        document.getElementById('lista-hist').innerHTML = hist.map(h => `<div class="hist-item"><b>${h.nome}</b><br><small style="color:#f1c40f">${h.local}</small></div>`).join('');
         
         bell.play();
-        
-        // Voz
-        await new Promise(resolve => {
-            setTimeout(() => {
-                const fala = new SpeechSynthesisUtterance(`Atenção, paciente ${item.nome}. Compareça à ${item.local}`);
-                fala.lang = 'pt-BR'; 
-                fala.rate = 0.9;
-                fala.onend = resolve;
-                window.speechSynthesis.speak(fala);
-            }, 1500);
-        });
-
-        // Espera 6 segundos após a fala antes de limpar ou chamar o próximo
-        await new Promise(resolve => setTimeout(resolve, 6000));
-        
-        processarFila();
+        setTimeout(() => {
+            const f = new SpeechSynthesisUtterance(`Atenção, paciente ${item.nome}. Compareça à ${item.local}`);
+            f.lang = 'pt-BR'; f.rate = 0.9;
+            f.onend = () => { setTimeout(() => { processar(); }, 6000); };
+            window.speechSynthesis.speak(f);
+        }, 1500);
     }
 </script>
 </body>
