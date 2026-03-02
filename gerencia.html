@@ -7,70 +7,104 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #e9ecef; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { background: white; width: 100%; max-width: 500px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        h2 { color: #013154; margin-top: 0; border-bottom: 3px solid #f1c40f; padding-bottom: 10px; text-align: center; }
-        label { font-weight: bold; color: #555; display: block; margin-bottom: 10px; }
-        textarea { width: 100%; padding: 15px; border: 3px solid #ced4da; border-radius: 12px; font-size: 1.2rem; box-sizing: border-box; resize: none; margin-bottom: 15px; }
-        .btn-enviar { width: 100%; padding: 20px; border: none; border-radius: 12px; font-size: 1.3rem; font-weight: bold; color: white; cursor: pointer; background: #28a745; transition: 0.3s; margin-bottom: 20px;}
-        .btn-enviar:hover { background: #218838; }
-        .aviso-atual { background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #0056b3; font-size: 1.1rem; margin-bottom: 25px; color: #333; }
+        :root { --dark: #013154; --amarelo: #f1c40f; --azul: #0056b3; --verde: #28a745; }
+        body { font-family: 'Segoe UI', sans-serif; background: #e9ecef; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        .botoes-rapidos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-rapido { background: #013154; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-rapido:hover { background: #0056b3; }
-        #feedback { text-align: center; font-weight: bold; color: #28a745; margin-top: 10px; height: 20px; }
+        .container { background: white; width: 100%; max-width: 550px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); box-sizing: border-box; }
+        
+        h2 { color: var(--dark); margin: 0 0 20px 0; border-bottom: 4px solid var(--amarelo); padding-bottom: 10px; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .status-box { background: #f8f9fa; padding: 15px; border-radius: 12px; border-left: 6px solid var(--azul); margin-bottom: 25px; }
+        .status-box small { color: #666; font-weight: bold; text-transform: uppercase; font-size: 0.75rem; }
+        .status-box p { margin: 5px 0 0 0; color: #333; font-size: 1.1rem; font-weight: 500; }
+
+        label { font-weight: bold; color: var(--dark); display: block; margin-bottom: 8px; font-size: 0.9rem; }
+        
+        textarea { width: 100%; padding: 15px; border: 2px solid #ced4da; border-radius: 12px; font-size: 1.1rem; box-sizing: border-box; resize: none; transition: border-color 0.3s; }
+        textarea:focus { border-color: var(--azul); outline: none; }
+        
+        .btn-enviar { width: 100%; padding: 18px; border: none; border-radius: 12px; font-size: 1.2rem; font-weight: bold; color: white; cursor: pointer; background: var(--verde); margin: 15px 0 25px 0; transition: transform 0.2s, background 0.3s; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3); }
+        .btn-enviar:hover { background: #218838; transform: translateY(-2px); }
+        .btn-enviar:active { transform: translateY(0); }
+
+        .grid-atalhos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-atalho { background: var(--dark); color: white; border: none; padding: 14px 10px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.3s; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .btn-atalho:hover { background: var(--azul); }
+
+        #msg-sucesso { text-align: center; color: var(--verde); font-weight: bold; margin-top: 15px; height: 20px; font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; }
+
+        footer { margin-top: auto; padding: 20px 0; font-size: 0.85rem; color: #888; text-align: center; }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h2>Painel da Gerência</h2>
+    <h2>Gerência de Avisos</h2>
     
-    <div class="aviso-atual">
-        <small>Rodando na TV agora:</small><br>
-        <strong id="texto-ativo">Carregando...</strong>
+    <div class="status-box">
+        <small>Aviso atual na TV:</small>
+        <p id="texto-ativo">A carregar...</p>
     </div>
 
-    <label>Digitar Novo Aviso para a TV:</label>
-    <textarea id="novo-aviso" rows="3" placeholder="Digite a mensagem que vai rolar no rodapé da TV..."></textarea>
-    <button class="btn-enviar" onclick="enviarAviso()">🚀 ATUALIZAR TV</button>
-
-    <label>Respostas Rápidas:</label>
-    <div class="botoes-rapidos">
-        <button class="btn-rapido" onclick="setAvisoRapido('Aguarde sua vez. Atendimento conforme Classificação de Risco.')">Atendimento Normal</button>
-        <button class="btn-rapido" onclick="setAvisoRapido('Troca de plantão em andamento. Agradecemos a compreensão.')">Troca de Plantão</button>
-        <button class="btn-rapido" onclick="setAvisoRapido('Emergência médica em andamento. O tempo de espera pode ser maior.')">Emergência</button>
-        <button class="btn-rapido" onclick="setAvisoRapido('Sistema inoperante. Atendimento manual em andamento.')">Sistema Fora</button>
-    </div>
+    <label for="novo-aviso">Escrever novo aviso para o rodapé:</label>
+    <textarea id="novo-aviso" rows="3" placeholder="Ex: Hoje o atendimento médico está com tempo de espera de 40 min..."></textarea>
     
-    <div id="feedback"></div>
+    <button class="btn-enviar" onclick="enviarAviso()">🚀 ATUALIZAR RODAPÉ DA TV</button>
+
+    <label>Mensagens Rápidas:</label>
+    <div class="grid-atalhos">
+        <button class="btn-atalho" onclick="setAviso('Aguarde a sua vez. Atendimento por Classificação de Risco.')">⚖️ Risco / Prioridade</button>
+        <button class="btn-atalho" onclick="setAviso('Troca de turno em andamento. Pedimos a sua compreensão.')">🔄 Troca de Turno</button>
+        <button class="btn-atalho" onclick="setAviso('Emergência crítica em atendimento. Atrasos podem ocorrer.')">⚠️ Emergência</button>
+        <button class="btn-atalho" onclick="setAviso('Mantenha o silêncio e colabore com o ambiente hospitalar.')">🤫 Silêncio</button>
+    </div>
+
+    <div id="msg-sucesso">✅ Atualizado com sucesso na TV!</div>
 </div>
 
+<footer>
+    Desenvolvido por <b>Lucas Freitas Gomes</b> &copy; 2026<br>
+    Unidade Aero Rancho
+</footer>
+
 <script>
-    const firebaseConfig = { apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A", authDomain: "sistema-crs-aero-rancho.firebaseapp.com", databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com", projectId: "sistema-crs-aero-rancho", storageBucket: "sistema-crs-aero-rancho.firebasestorage.app", messagingSenderId: "543461454068", appId: "1:543461454068:web:c06dbdab52c065e6962ea1" };
+    // Configuração do Firebase
+    const firebaseConfig = { 
+        apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A", 
+        authDomain: "sistema-crs-aero-rancho.firebaseapp.com", 
+        databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com", 
+        projectId: "sistema-crs-aero-rancho", 
+        storageBucket: "sistema-crs-aero-rancho.firebasestorage.app", 
+        messagingSenderId: "543461454068", 
+        appId: "1:543461454068:web:c06dbdab52c065e6962ea1" 
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Fica lendo o que está rolando na TV agora
+    // Sincroniza o que está escrito na TV agora
     db.ref('avisos').on('value', snap => {
-        if(snap.val()) document.getElementById('texto-ativo').innerText = snap.val();
+        document.getElementById('texto-ativo').innerText = snap.val() || "Sem avisos ativos.";
     });
 
     function enviarAviso() {
         const txt = document.getElementById('novo-aviso').value.trim();
-        if(!txt) { alert("Digite um aviso!"); return; }
-        salvarNoFirebase(txt);
+        if(!txt) { alert("Por favor, escreva uma mensagem antes de enviar."); return; }
+        salvar(txt);
         document.getElementById('novo-aviso').value = "";
     }
 
-    function setAvisoRapido(txt) { salvarNoFirebase(txt); }
+    function setAviso(txt) {
+        salvar(txt);
+    }
 
-    function salvarNoFirebase(txt) {
+    function salvar(txt) {
         db.ref('avisos').set(txt).then(() => {
-            document.getElementById('feedback').innerText = "✅ Aviso atualizado na TV!";
-            setTimeout(() => document.getElementById('feedback').innerText = "", 3000);
+            const feedback = document.getElementById('msg-sucesso');
+            feedback.style.opacity = "1";
+            setTimeout(() => { feedback.style.opacity = "0"; }, 3000);
         });
     }
 </script>
+
 </body>
 </html>
