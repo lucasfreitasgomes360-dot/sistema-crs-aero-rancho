@@ -9,8 +9,8 @@
         body { background: #013154; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         header { background: white; color: #013154; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid #f1c40f; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10;}
         .layout { display: flex; flex: 1; overflow: hidden; }
-        #foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-right: 2px solid rgba(255,255,255,0.1); padding: 20px; box-sizing: border-box; }
         
+        #foco { flex: 2.5; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-right: 2px solid rgba(255,255,255,0.1); padding: 20px; box-sizing: border-box; }
         .chamada-ativa { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes popIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
 
@@ -18,10 +18,13 @@
         .paciente { font-size: clamp(3rem, 6.5vw, 7.5rem); font-weight: 900; text-transform: uppercase; margin: 15px 0; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); letter-spacing: 2px; max-width: 95%; word-wrap: break-word; line-height: 1.1; }
         .local { font-size: 4.5vw; background: rgba(255,255,255,0.1); padding: 15px 60px; border-radius: 60px; border: 3px solid #f1c40f; font-weight: bold; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); margin-top: 10px; }
         
-        #historico { flex: 1; background: rgba(0,0,0,0.2); padding: 20px; display: flex; flex-direction: column; }
-        .hist-titulo { text-align: center; font-size: 1.5rem; color: #f1c40f; margin-bottom: 15px; font-weight: bold; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-        .hist-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 6px solid #f1c40f; }
-        
+        /* HISTÓRICO POR SETOR */
+        #historico-setores { flex: 1; background: rgba(0,0,0,0.3); padding: 15px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+        .setor-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border-left: 5px solid #ccc; }
+        .setor-card h4 { margin: 0 0 5px 0; font-size: 0.9rem; color: #f1c40f; text-transform: uppercase; }
+        .setor-card p { margin: 0; font-weight: bold; font-size: 1.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .setor-card small { color: #aaa; font-size: 0.8rem; }
+
         footer { background: #e74c3c; height: 65px; display: flex; align-items: center; overflow: hidden; z-index: 10; }
         .marquee { white-space: nowrap; font-size: 2.2rem; font-weight: bold; animation: scroll 25s linear infinite; width: 100%; }
         @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
@@ -36,7 +39,12 @@
 </header>
 <div class="layout">
     <main id="foco"></main>
-    <aside id="historico"><div class="hist-titulo">ÚLTIMAS CHAMADAS</div><div id="lista-hist"></div></aside>
+    <aside id="historico-setores">
+        <div class="setor-card" style="border-color: #007bff"><h4>MÉDICO</h4><p id="hist-medico">---</p><small id="local-medico">-</small></div>
+        <div class="setor-card" style="border-color: #28a745"><h4>ENFERMAGEM</h4><p id="hist-enfermagem">---</p><small id="local-enfermagem">-</small></div>
+        <div class="setor-card" style="border-color: #d35400"><h4>ODONTOLOGIA</h4><p id="hist-odonto">---</p><small id="local-odonto">-</small></div>
+        <div class="setor-card" style="border-color: #8e44ad"><h4>SERVIÇO SOCIAL</h4><p id="hist-social">---</p><small id="local-social">-</small></div>
+    </aside>
 </div>
 <footer><div class="marquee" id="tv-avisos">Aguardando avisos da gerência...</div></footer>
 
@@ -46,23 +54,29 @@
     const db = firebase.database();
     const bell = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     
-    let ocupado = false, ativo = false, hist = [], iRec = 0;
+    let ocupado = false, ativo = false, iRec = 0;
     let ultimaChamadaId = 0;
+    let filaChamadas = [];
 
-    const recados = [{t:"DENGUE", x:"Elimine criadouros de mosquitos. Use repelente."}, {t:"ATENÇÃO", x:"Acompanhe o painel para a sua chamada."}, {t:"SAÚDE", x:"Lave as mãos com frequência."}];
+    const recados = [
+        {t:"DENGUE", x:"Elimine criadouros de mosquitos. Use repelente."},
+        {t:"ATENÇÃO", x:"Acompanhe o painel para a sua chamada."},
+        {t:"SAÚDE", x:"Lave as mãos com frequência."}
+    ];
 
     function iniciar() { 
         ativo = true; 
         document.getElementById('overlay').style.display='none'; 
         carrossel(); 
-        setInterval(carrossel, 8000); 
+        setInterval(carrossel, 10000); 
     }
     
     function carrossel() { 
-        if(!ocupado && ativo) { 
+        if(!ocupado && ativo && filaChamadas.length === 0) { 
             const r = recados[iRec]; 
-            document.getElementById('foco').innerHTML = `<h2 style="color:#f1c40f; font-size:3.5rem;">${r.t}</h2><p style="font-size:4.5vw; font-weight:bold;">${r.x}</p>`; 
-            document.getElementById('foco').className = ''; 
+            const foco = document.getElementById('foco');
+            foco.innerHTML = `<h2 style="color:#f1c40f; font-size:3.5rem;">${r.t}</h2><p style="font-size:4.5vw; font-weight:bold;">${r.x}</p>`; 
+            foco.className = ''; 
             iRec = (iRec + 1) % recados.length; 
         } 
     }
@@ -70,48 +84,66 @@
     setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
     db.ref('avisos').on('value', snap => { if(snap.val()) document.getElementById('tv-avisos').innerText = snap.val(); });
 
-    // ESCUTA O FIREBASE DIRETAMENTE
     db.ref('chamada_atual').on('value', snap => { 
         const d = snap.val(); 
         if(d && d.timestamp !== ultimaChamadaId) {
             ultimaChamadaId = d.timestamp;
-            processarChamada(d);
+            filaChamadas.push(d);
+            if(!ocupado) processarFila();
         } 
     });
 
-    function processarChamada(item) {
-        ocupado = true;
-        let local = item.local.toLowerCase();
-        let cor = "#007bff", setor = "MÉDICOS";
-        
-        if(local.includes("triagem") || local.includes("medicação") || local.includes("coleta") || local.includes("reidratação")) { cor = "#28a745"; setor = "ENFERMAGEM"; }
-        else if(local.includes("odontologia")) { cor = "#d35400"; setor = "ODONTOLOGIA"; }
-        else if(local.includes("social")) { cor = "#8e44ad"; setor = "SERVIÇO SOCIAL"; }
+    async function processarFila() {
+        if (filaChamadas.length === 0 || !ativo) {
+            ocupado = false;
+            return;
+        }
 
-        // Atualiza a tela principal
-        document.getElementById('foco').className = 'chamada-ativa';
-        document.getElementById('foco').innerHTML = `<div class="badge" style="background:${cor}">${setor}</div><div class="paciente">${item.nome}</div><div class="local">${item.local}</div>`;
+        ocupado = true;
+        const item = filaChamadas.shift();
         
-        // Atualiza o histórico
-        hist.unshift(item); if(hist.length > 5) hist.pop();
-        document.getElementById('lista-hist').innerHTML = hist.map(h => `<div class="hist-item"><b>${h.nome}</b><br><small style="color:#f1c40f">${h.local}</small></div>`).join('');
+        let local = item.local.toLowerCase();
+        let cor = "#007bff", setorNome = "MÉDICOS", idAlvo = "medico";
+        
+        if(local.includes("triagem") || local.includes("medicação") || local.includes("coleta") || local.includes("reidratação")) { 
+            cor = "#28a745"; setorNome = "ENFERMAGEM"; idAlvo = "enfermagem";
+        } else if(local.includes("odontologia")) { 
+            cor = "#d35400"; setorNome = "ODONTOLOGIA"; idAlvo = "odonto";
+        } else if(local.includes("social")) { 
+            cor = "#8e44ad"; setorNome = "SERVIÇO SOCIAL"; idAlvo = "social";
+        }
+
+        // Atualiza Histórico Particular do Setor
+        document.getElementById('hist-' + idAlvo).innerText = item.nome;
+        document.getElementById('local-' + idAlvo).innerText = item.local;
+
+        // Visual na Tela Principal
+        const foco = document.getElementById('foco');
+        foco.className = 'chamada-ativa';
+        foco.innerHTML = `<div class="badge" style="background:${cor}">${setorNome}</div><div class="paciente">${item.nome}</div><div class="local">${item.local}</div>`;
         
         bell.play();
         
-        // Fala o nome
-        setTimeout(() => {
-            const fala = new SpeechSynthesisUtterance(`Atenção, paciente ${item.nome}. Compareça à ${item.local}`);
-            fala.lang = 'pt-BR'; 
-            fala.rate = 0.9;
-            window.speechSynthesis.speak(fala);
-            
-            fala.onend = () => { 
-                setTimeout(() => { 
-                    ocupado = false; 
-                    carrossel(); 
-                }, 5000); // Fica 5 segundos na tela após terminar de falar antes de voltar ao carrossel
-            };
-        }, 1200);
+        // Voz
+        await new Promise(resolve => {
+            setTimeout(() => {
+                const fala = new SpeechSynthesisUtterance(`Atenção, paciente ${item.nome}. Compareça à ${item.local}`);
+                fala.lang = 'pt-BR'; 
+                fala.rate = 0.9;
+                fala.onend = resolve;
+                window.speechSynthesis.speak(fala);
+            }, 1500);
+        });
+
+        // Espera 6 segundos exibindo o nome antes de ir para o próximo ou voltar carrossel
+        await new Promise(resolve => setTimeout(resolve, 6000));
+        
+        if(filaChamadas.length === 0) {
+            ocupado = false;
+            carrossel();
+        } else {
+            processarFila();
+        }
     }
 </script>
 </body>
