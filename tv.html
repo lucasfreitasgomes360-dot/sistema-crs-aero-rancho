@@ -9,18 +9,23 @@
         body { background: #013154; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         header { background: white; color: #013154; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid #f1c40f; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10;}
         .layout { display: flex; flex: 1; overflow: hidden; }
-        #foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-right: 2px solid rgba(255,255,255,0.1); padding: 20px; box-sizing: border-box; }
+        #foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-right: 2px solid rgba(255,255,255,0.1); }
+        
+        /* Nova Animação da Chamada Principal */
         .chamada-ativa { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes popIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
-        .badge { font-size: 2.2rem; padding: 10px 50px; border-radius: 12px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; color: white; }
-        .paciente { font-size: clamp(3rem, 6.5vw, 7.5rem); font-weight: 900; text-transform: uppercase; margin: 15px 0; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); line-height: 1.1; max-width: 95%; word-wrap: break-word; }
-        .local { font-size: 4.5vw; background: rgba(255,255,255,0.1); padding: 15px 60px; border-radius: 60px; border: 3px solid #f1c40f; font-weight: bold; }
-        #historico { flex: 1; background: rgba(0,0,0,0.2); padding: 20px; }
-        .hist-titulo { text-align: center; font-size: 1.5rem; color: #f1c40f; margin-bottom: 15px; font-weight: bold; border-bottom: 2px solid rgba(255,255,255,0.1); }
-        .hist-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 6px solid #f1c40f; animation: fadeInRight 0.3s ease forwards; }
+
+        .badge { font-size: 2.2rem; padding: 10px 50px; border-radius: 12px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .paciente { font-size: 7.5vw; font-weight: 900; text-transform: uppercase; margin: 15px 0; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); letter-spacing: 2px; }
+        .local { font-size: 4.5vw; background: rgba(255,255,255,0.1); padding: 15px 60px; border-radius: 60px; border: 3px solid #f1c40f; font-weight: bold; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); }
+        
+        #historico { flex: 1; background: rgba(0,0,0,0.2); padding: 20px; display: flex; flex-direction: column; }
+        .hist-titulo { text-align: center; font-size: 1.5rem; color: #f1c40f; margin-bottom: 15px; font-weight: bold; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .hist-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 6px solid #f1c40f; animation: fadeInRight 0.5s ease; }
         @keyframes fadeInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-        footer { background: #e74c3c; height: 65px; display: flex; align-items: center; overflow: hidden; }
-        .marquee { white-space: nowrap; font-size: 2.2rem; font-weight: bold; animation: scroll 25s linear infinite; width: 100%; }
+        
+        footer { background: #e74c3c; height: 65px; display: flex; align-items: center; overflow: hidden; box-shadow: 0 -4px 15px rgba(0,0,0,0.3); z-index: 10; }
+        .marquee { white-space: nowrap; font-size: 2.2rem; font-weight: bold; animation: scroll 25s linear infinite; width: 100%; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
         @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #013154; z-index: 1000; display: flex; justify-content: center; align-items: center; cursor: pointer; }
     </style>
@@ -42,72 +47,39 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const bell = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-    
-    let ocupado = false, ativo = false, iRec = 0, hist = [], ultimaId = 0, filaChamadas = [];
-    const recados = [{t:"DENGUE", x:"Elimine criadouros de mosquitos."}, {t:"ATENÇÃO", x:"Acompanhe o painel para a sua chamada."}, {t:"SAÚDE", x:"Lave as mãos com frequência."}];
+    let ocupado = false, ativo = false, hist = [], iRec = 0;
+    const recados = [{t:"DENGUE", x:"Elimine criadouros de mosquitos. Use repelente."}, {t:"ATENÇÃO", x:"Acompanhe o painel para a sua chamada."}, {t:"SAÚDE", x:"Lave as mãos com frequência."}];
 
-    function iniciar() { 
-        ativo = true; 
-        document.getElementById('overlay').style.display='none'; 
-        carrossel(); 
-        setInterval(() => { if(!ocupado && filaChamadas.length === 0) carrossel(); }, 8000); 
-    }
+    function iniciar() { ativo = true; document.getElementById('overlay').style.display='none'; bell.play(); carrossel(); setInterval(carrossel, 8000); }
+    function carrossel() { if(!ocupado && ativo) { const r = recados[iRec]; document.getElementById('foco').innerHTML = `<h2 style="color:#f1c40f; font-size:3.5rem;">${r.t}</h2><p style="font-size:4.5vw; font-weight:bold;">${r.x}</p>`; document.getElementById('foco').className = ''; iRec = (iRec + 1) % recados.length; } }
     
-    function carrossel() { 
-        if(ocupado || filaChamadas.length > 0) return;
-        const r = recados[iRec]; 
-        document.getElementById('foco').innerHTML = `<h2 style="color:#f1c40f; font-size:3.5rem;">${r.t}</h2><p style="font-size:4.5vw; font-weight:bold;">${r.x}</p>`; 
-        document.getElementById('foco').className = '';
-        iRec = (iRec + 1) % recados.length; 
-    }
-    
-    setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}); }, 1000);
+    setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
     db.ref('avisos').on('value', snap => { if(snap.val()) document.getElementById('tv-avisos').innerText = snap.val(); });
 
-    // ESCUTA O FIREBASE E COLOCA NA FILA
-    db.ref('chamada_atual').on('value', snap => { 
-        const d = snap.val(); 
-        if(d && d.timestamp !== ultimaId) {
-            ultimaId = d.timestamp;
-            filaChamadas.push(d);
-            if(!ocupado) processarProxima();
-        } 
-    });
+    db.ref('chamada_atual').on('value', snap => { const d = snap.val(); if(d && d.timestamp > Date.now() - 10000) processar(d); });
 
-    function processarProxima() {
-        if(filaChamadas.length === 0) {
-            ocupado = false;
-            setTimeout(carrossel, 5000); // Volta carrossel após 5s de silêncio
-            return;
-        }
-
+    function processar(item) {
         ocupado = true;
-        const item = filaChamadas.shift();
-        
+        let local = item.local.toLowerCase();
         let cor = "#007bff", setor = "MÉDICOS";
-        if(item.local.match(/Triagem|Medicação|Coleta|Reidratação/i)) { cor = "#28a745"; setor = "ENFERMAGEM"; }
-        else if(item.local.match(/Odonto/i)) { cor = "#d35400"; setor = "ODONTOLOGIA"; }
-        else if(item.local.match(/Social/i)) { cor = "#8e44ad"; setor = "SERVIÇO SOCIAL"; }
+        
+        if(local.includes("triagem") || local.includes("medicação") || local.includes("coleta") || local.includes("reidratação")) { cor = "#28a745"; setor = "ENFERMAGEM"; }
+        else if(local.includes("odontologia")) { cor = "#d35400"; setor = "ODONTOLOGIA"; }
+        else if(local.includes("social")) { cor = "#8e44ad"; setor = "SERVIÇO SOCIAL"; }
 
-        // Atualiza TV e Histórico
-        const foco = document.getElementById('foco');
-        foco.className = 'chamada-ativa';
-        foco.innerHTML = `<div class="badge" style="background:${cor}">${setor}</div><div class="paciente">${item.nome}</div><div class="local">${item.local}</div>`;
+        // Adiciona classe de animação e renderiza o HTML
+        document.getElementById('foco').className = 'chamada-ativa';
+        document.getElementById('foco').innerHTML = `<div class="badge" style="background:${cor}">${setor}</div><div class="paciente">${item.nome}</div><div class="local">${item.local}</div>`;
         
         hist.unshift(item); if(hist.length > 5) hist.pop();
         document.getElementById('lista-hist').innerHTML = hist.map(h => `<div class="hist-item"><b>${h.nome}</b><br><small style="color:#f1c40f">${h.local}</small></div>`).join('');
         
-        // Sequência de Som e Voz
         bell.play();
         setTimeout(() => {
-            const f = new SpeechSynthesisUtterance(`Atenção, paciente ${item.nome}. Compareça à ${item.local}`);
-            f.lang = 'pt-BR'; f.rate = 0.9;
-            
-            // Quando terminar de falar este nome, espera 4 segundos e tenta o próximo da fila
-            f.onend = () => {
-                setTimeout(processarProxima, 4000);
-            };
-            window.speechSynthesis.speak(f);
+            const fala = new SpeechSynthesisUtterance(`${item.nome}. Compareça à ${item.local}`);
+            fala.lang = 'pt-BR'; fala.rate = 0.9;
+            window.speechSynthesis.speak(fala);
+            fala.onend = () => { setTimeout(() => { ocupado = false; carrossel(); }, 6000); };
         }, 1200);
     }
 </script>
