@@ -9,15 +9,27 @@
         body { background: #013154; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         header { background: white; color: #013154; padding: 10px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid #f1c40f; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 10;}
         .layout { display: flex; flex: 1; overflow: hidden; }
-        #foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-right: 2px solid rgba(255,255,255,0.1); }
+        #foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border-right: 2px solid rgba(255,255,255,0.1); padding: 20px; box-sizing: border-box; }
         
-        /* Nova Animação da Chamada Principal */
         .chamada-ativa { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes popIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
 
         .badge { font-size: 2.2rem; padding: 10px 50px; border-radius: 12px; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .paciente { font-size: 7.5vw; font-weight: 900; text-transform: uppercase; margin: 15px 0; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); letter-spacing: 2px; }
-        .local { font-size: 4.5vw; background: rgba(255,255,255,0.1); padding: 15px 60px; border-radius: 60px; border: 3px solid #f1c40f; font-weight: bold; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); }
+        
+        /* AJUSTE DO NOME PARA NÃO CORTAR */
+        .paciente { 
+            font-size: clamp(3rem, 6.5vw, 7.5rem); /* Se adapta à tela sem ficar gigante demais */
+            font-weight: 900; 
+            text-transform: uppercase; 
+            margin: 15px 0; 
+            text-shadow: 4px 4px 10px rgba(0,0,0,0.5); 
+            letter-spacing: 2px; 
+            max-width: 95%; /* Impede que saia da tela pelas laterais */
+            word-wrap: break-word; /* Se a palavra for imensa, quebra a linha */
+            line-height: 1.1; /* Deixa as linhas coladinhas caso o nome ocupe duas linhas */
+        }
+        
+        .local { font-size: 4.5vw; background: rgba(255,255,255,0.1); padding: 15px 60px; border-radius: 60px; border: 3px solid #f1c40f; font-weight: bold; box-shadow: inset 0 0 20px rgba(0,0,0,0.2); margin-top: 10px; }
         
         #historico { flex: 1; background: rgba(0,0,0,0.2); padding: 20px; display: flex; flex-direction: column; }
         .hist-titulo { text-align: center; font-size: 1.5rem; color: #f1c40f; margin-bottom: 15px; font-weight: bold; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
@@ -47,19 +59,54 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const bell = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    
     let ocupado = false, ativo = false, hist = [], iRec = 0;
+    
+    // FILA DE ESPERA E CONTROLE DE CHAMADAS
+    let filaChamadas = [];
+    let ultimaChamadaId = 0; 
+    window.falaAtual = null; // Variável global para evitar bugs na voz do navegador
+
     const recados = [{t:"DENGUE", x:"Elimine criadouros de mosquitos. Use repelente."}, {t:"ATENÇÃO", x:"Acompanhe o painel para a sua chamada."}, {t:"SAÚDE", x:"Lave as mãos com frequência."}];
 
     function iniciar() { ativo = true; document.getElementById('overlay').style.display='none'; bell.play(); carrossel(); setInterval(carrossel, 8000); }
-    function carrossel() { if(!ocupado && ativo) { const r = recados[iRec]; document.getElementById('foco').innerHTML = `<h2 style="color:#f1c40f; font-size:3.5rem;">${r.t}</h2><p style="font-size:4.5vw; font-weight:bold;">${r.x}</p>`; document.getElementById('foco').className = ''; iRec = (iRec + 1) % recados.length; } }
+    
+    function carrossel() { 
+        if(!ocupado && ativo && filaChamadas.length === 0) { 
+            const r = recados[iRec]; 
+            document.getElementById('foco').innerHTML = `<h2 style="color:#f1c40f; font-size:3.5rem;">${r.t}</h2><p style="font-size:4.5vw; font-weight:bold;">${r.x}</p>`; 
+            document.getElementById('foco').className = ''; 
+            iRec = (iRec + 1) % recados.length; 
+        } 
+    }
     
     setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}); }, 1000);
     db.ref('avisos').on('value', snap => { if(snap.val()) document.getElementById('tv-avisos').innerText = snap.val(); });
 
-    db.ref('chamada_atual').on('value', snap => { const d = snap.val(); if(d && d.timestamp > Date.now() - 10000) processar(d); });
+    // ESCUTA O FIREBASE E JOGA NA FILA
+    db.ref('chamada_atual').on('value', snap => { 
+        const d = snap.val(); 
+        if(d && d.timestamp > Date.now() - 10000) {
+            // Verifica se a chamada já não entrou na fila agorinha mesmo
+            if (d.timestamp !== ultimaChamadaId) {
+                ultimaChamadaId = d.timestamp;
+                filaChamadas.push(d);
+                if (!ocupado && ativo) processarProximaChamada();
+            }
+        } 
+    });
 
-    function processar(item) {
+    // PROCESSA A FILA UMA POR UMA
+    function processarProximaChamada() {
+        if (filaChamadas.length === 0) {
+            ocupado = false;
+            carrossel();
+            return;
+        }
+        
         ocupado = true;
+        let item = filaChamadas.shift(); // Tira o primeiro paciente da fila
+
         let local = item.local.toLowerCase();
         let cor = "#007bff", setor = "MÉDICOS";
         
@@ -67,20 +114,35 @@
         else if(local.includes("odontologia")) { cor = "#d35400"; setor = "ODONTOLOGIA"; }
         else if(local.includes("social")) { cor = "#8e44ad"; setor = "SERVIÇO SOCIAL"; }
 
-        // Adiciona classe de animação e renderiza o HTML
-        document.getElementById('foco').className = 'chamada-ativa';
-        document.getElementById('foco').innerHTML = `<div class="badge" style="background:${cor}">${setor}</div><div class="paciente">${item.nome}</div><div class="local">${item.local}</div>`;
+        // Reinicia a animação da tela
+        let foco = document.getElementById('foco');
+        foco.className = '';
+        void foco.offsetWidth; 
+        foco.className = 'chamada-ativa';
+
+        foco.innerHTML = `<div class="badge" style="background:${cor}">${setor}</div><div class="paciente">${item.nome}</div><div class="local">${item.local}</div>`;
         
         hist.unshift(item); if(hist.length > 5) hist.pop();
         document.getElementById('lista-hist').innerHTML = hist.map(h => `<div class="hist-item"><b>${h.nome}</b><br><small style="color:#f1c40f">${h.local}</small></div>`).join('');
         
+        // SÓ TOCA A CAMPAINHA AGORA QUE A TELA MUDOU
         bell.play();
+        
         setTimeout(() => {
-            const fala = new SpeechSynthesisUtterance(`${item.nome}. Compareça à ${item.local}`);
-            fala.lang = 'pt-BR'; fala.rate = 0.9;
-            window.speechSynthesis.speak(fala);
-            fala.onend = () => { setTimeout(() => { ocupado = false; carrossel(); }, 6000); };
-        }, 1200);
+            // NOVO TEXTO DE VOZ
+            window.falaAtual = new SpeechSynthesisUtterance(`Atenção, paciente ${item.nome}. Compareça à ${item.local}`);
+            window.falaAtual.lang = 'pt-BR'; 
+            window.falaAtual.rate = 0.9;
+            
+            window.speechSynthesis.speak(window.falaAtual);
+            
+            // SÓ LIBERA PARA O PRÓXIMO QUANDO A VOZ TERMINAR DE FALAR
+            window.falaAtual.onend = () => { 
+                setTimeout(() => { 
+                    processarProximaChamada(); 
+                }, 2000); // Aguarda 2 segundos com o nome na tela antes de chamar o próximo (ou voltar pro carrossel)
+            };
+        }, 1200); // Aguarda a campainha tocar antes de começar a falar
     }
 </script>
 </body>
