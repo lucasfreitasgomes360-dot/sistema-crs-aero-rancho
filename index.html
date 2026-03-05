@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title> Sistema Integrado de Chamadas - SESAU - Login </title>
+    <title> Sistema Integrado de Chamadas - Login </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
@@ -37,7 +37,7 @@
 
     <div class="login-card" id="card-login">
         <div class="icon-box"><span class="material-symbols-rounded">shield_person</span></div>
-        <h1>Portal CRS</h1>
+        <h1>Sistema Integrado de Chamadas</h1>
         <span class="sub">Acesso Identificado</span>
         
         <div class="input-group">
@@ -66,11 +66,14 @@
     const PROFISSIONAIS = {
         "lucas.med": { pass: "@2026", nome: "Drº. Lucas Freitas", cargo: "Médico", multi: true, unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"tira", n:"CRS Tiradentes"}, {id:"nb", n:"UPA Nova Bahia"}, {id:"uni", n:"UPA Universitário"}]},
         "lucas.tec": { pass: "@2026", nome: "Tec. Lucas Freitas", cargo: "Técnico de Enf.", multi: true, unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"tira", n:"CRS Tiradentes"}, {id:"nb", n:"UPA Nova Bahia"}, {id:"uni", n:"UPA Universitário"}]},
+        "lucas.enf": { pass: "@2026", nome: "Enf. Yngrid Pereira Silva", cargo: "Enfermeira", multi: true, unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"tira", n:"CRS Tiradentes"}, {id:"nb", n:"UPA Nova Bahia"}, {id:"uni", n:"UPA Universitário"}]},
+        "lucas.enf": { pass: "@2026", nome: "Enf. Lucas Freitas", cargo: "Enfermeiro", multi: true, unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"tira", n:"CRS Tiradentes"}, {id:"nb", n:"UPA Nova Bahia"}, {id:"uni", n:"UPA Universitário"}]},
         "yngrid.tec": { pass: "@2026", nome: "Tec. Yngrid Silva", cargo: "Técnica de Enf.", multi: true, unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"tira", n:"CRS Tiradentes"}, {id:"nb", n:"UPA Nova Bahia"}, {id:"uni", n:"UPA Universitário"}]},
-        "vitor.med": { pass: "@123", nome: "Dr. Vitor", cargo: "Médico", multi: true, unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"nb", n:"UPA Nova Bahia"}]},
+        "vitor.med": { pass: "@2026", nome: "Dr. Vitor", cargo: "Médico", multi: true, unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"nb", n:"UPA Nova Bahia"}]},
         "tv.aero": { pass: "@tv2026", nome: "TV", cargo: "TV", multi: false, id: "aero", un: "CRS Aero Rancho", tipo: "tv" },
         "tv.tira": { pass: "@tv2026", nome: "TV", cargo: "TV", multi: false, id: "tira", un: "CRS Tiradentes", tipo: "tv" },
         "tv.uni": { pass: "@tv2026", nome: "TV", cargo: "TV", multi: false, id: "uni", un: "UPA Universitário", tipo: "tv" },
+        "tv.nb": { pass: "@tv2026", nome: "TV", cargo: "TV", multi: false, id: "nb", un: "UPA Nova Bahia", tipo: "tv" },
         "admin": { pass: "@admin", nome: "Gestor", cargo: "Gerência", multi: false, id: "aero", un: "CRS Aero Rancho", tipo: "gerencia" }
     };
 
@@ -117,4 +120,5 @@
     }
 </script>
 </body>
+
 </html>
