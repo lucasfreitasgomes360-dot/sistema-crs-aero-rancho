@@ -88,14 +88,13 @@
     </div>
 
 <script>
-    // Configurações e Dados
+    // Substitua o objeto SALAS por este aqui:
     const SALAS = {
         "aero": { 
             "Médica": ["Consultório 01", "Consultório 02", "Consultório 03", "Consultório 04", "Consultório 05"], 
             "Médico": ["Consultório 01", "Consultório 02", "Consultório 03", "Consultório 04", "Consultório 05"],
             "Enfermeira": ["Triagem 01", "Triagem 02"],
             "Enfermeiro": ["Triagem 01", "Triagem 02"],
-            "tec.": ["Triagem 01", "Triagem 02", "Reidratação", "Medicação"],
             "Técnico de Enf.": ["Triagem 01", "Triagem 02", "Reidratação", "Medicação"],
             "Técnica de Enf.": ["Triagem 01", "Triagem 02", "Reidratação", "Medicação"]
         },
@@ -104,7 +103,6 @@
             "Médico": ["Consultório A", "Consultório B", "Vermelha"], 
             "Enfermeira": ["Triagem 01", "Triagem 02"], 
             "Enfermeiro": ["Triagem 01", "Triagem 02"],
-            "tec.": ["Triagem 01", "Triagem 02", "Reidratação", "Medicação"],
             "Técnico de Enf.": ["Triagem 01", "Triagem 02", "Reidratação", "Medicação"],
             "Técnica de Enf.": ["Triagem 01", "Triagem 02", "Reidratação", "Medicação"]            
         },
@@ -112,8 +110,7 @@
             "Médica": ["Consultório 1", "Consultório 2", "Ambulatório"], 
             "Médico": ["Consultório 1", "Consultório 2", "Ambulatório"], 
             "Enfermeira": ["Triagem", "Medicação"], 
-            "Enfermeiro": ["Triagem", "Medicação"] 
-            "tec.": ["Triagem 01", "Triagem 02", "Reidratação", "Medicação"],
+            "Enfermeiro": ["Triagem", "Medicação"], // <--- A vírgula que faltava aqui
             "Técnico de Enf.": ["Triagem 01", "Triagem 02", "Reidratação", "Medicação"],
             "Técnica de Enf.": ["Triagem 01", "Triagem 02", "Reidratação", "Medicação"]
         },
@@ -121,8 +118,7 @@
             "Médica": ["C1", "C2"], 
             "Médico": ["C1", "C2"], 
             "Enfermeira": ["Triagem"], 
-            "Enfermeiro": ["Triagem"] 
-            "tec.": ["Triagem 01", "Triagem 02", "Reidratação", "Medicação"],
+            "Enfermeiro": ["Triagem"], // <--- E aqui também
             "Técnico de Enf.": ["Triagem 01", "Triagem 02", "Reidratação", "Medicação"],
             "Técnica de Enf.": ["Triagem 01", "Triagem 02", "Reidratação", "Medicação"]
         }
