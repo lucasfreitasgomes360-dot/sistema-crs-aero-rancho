@@ -157,21 +157,31 @@
     }
 
     function validar() {
-        const u = document.getElementById('user').value.toLowerCase().trim();
-        const p = document.getElementById('pass').value;
-        const user = PROFISSIONAIS[u];
+    const u = document.getElementById('user').value.toLowerCase().trim();
+    const p = document.getElementById('pass').value;
+    const user = PROFISSIONAIS[u];
 
-        if(user && user.pass === p) {
-            if(user.multi) {
-                document.getElementById('card-login').classList.add('hidden');
-                document.getElementById('card-unidades').classList.remove('hidden');
-                document.getElementById('welcome').innerText = "Olá, " + user.nome.split(' ')[0];
-                document.getElementById('grid-unidades').innerHTML = user.unidades.map(un => 
-                    `<div class="btn-unidade" onclick="entrar('${un.id}','${un.n}','${user.nome}','${user.cargo}', 'painel')">${un.n}</div>`
-                ).join('');
-            } else { entrar(user.id, user.un, user.nome, user.cargo, user.tipo || "painel"); }
-        } else { document.getElementById('msg-erro').style.display="block"; }
+    if(user && user.pass === p) {
+        if(user.multi) {
+            document.getElementById('card-login').classList.add('hidden');
+            document.getElementById('card-unidades').classList.remove('hidden');
+            document.getElementById('welcome').innerText = "Olá, " + user.nome.split(' ')[0];
+            
+            // AQUI ESTÁ A CHAVE: 
+            // Usamos ${user.tipo || 'painel'}. 
+            // Se o usuário for médico/enf, ele não tem "tipo" no objeto, então vira 'painel' (vai pra sala).
+            // Se for admin, ele tem tipo "gerencia", então vira 'gerencia' (abre o menu da TV).
+            document.getElementById('grid-unidades').innerHTML = user.unidades.map(un => 
+                `<div class="btn-unidade" onclick="entrar('${un.id}','${un.n}','${user.nome}','${user.cargo}', '${user.tipo || "painel"}')">${un.n}</div>`
+            ).join('');
+            
+        } else { 
+            entrar(user.id, user.un, user.nome, user.cargo, user.tipo || "painel"); 
+        }
+    } else { 
+        document.getElementById('msg-erro').style.display="block"; 
     }
+}
 
     function entrar(id, un, nome, cargo, tipo) {
         sessionStorage.clear();
