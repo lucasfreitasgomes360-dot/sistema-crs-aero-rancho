@@ -181,8 +181,19 @@
         sessionStorage.setItem('p_nome', nome); 
         sessionStorage.setItem('p_cargo', cargo);
         
+        // Se for admin, ele pergunta o que quer abrir
+        if(tipo === "gerencia") {
+            const escolha = confirm("Deseja abrir a TV desta unidade?\n\n[OK] para ver a TV\n[Cancelar] para Gestão");
+            if(escolha) {
+                window.location.href = "tv.html";
+            } else {
+                window.location.href = "gerencia.html";
+            }
+            return; // Interrompe para não executar o código abaixo
+        }
+
+        // Lógica normal para os outros usuários
         if(tipo === "tv") window.location.href = "tv.html";
-        else if(tipo === "gerencia") window.location.href = "gerencia.html";
         else window.location.href = "painel.html";
     }
 </script>
