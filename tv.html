@@ -110,38 +110,51 @@
     }
 
     async function processarFila() {
-        if (fila.length === 0) return;
-        processando = true;
-        clearTimeout(timeoutEspera);
-        
-        const c = fila.shift();
-        
-        // Som de Chamada
-        new Audio('https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3').play();
+    if (fila.length === 0) return;
+    processando = true;
+    clearTimeout(timeoutEspera);
+    
+    const c = fila.shift();
+    
+    // Som de Chamada
+    new Audio('https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3').play();
 
-        document.getElementById('area-foco').classList.remove('modo-espera');
-        document.getElementById('txt-status').innerText = "PACIENTE";
-        
-        // Ajuste de fonte para nomes longos
-        const elSenha = document.getElementById('senha-atual');
-        elSenha.innerText = c.senha;
-        elSenha.style.fontSize = c.senha.length > 15 ? '6rem' : '10rem';
-        
-        document.getElementById('local-atual').innerText = c.consultorio;
+    document.getElementById('area-foco').classList.remove('modo-espera');
+    document.getElementById('txt-status').innerText = "PACIENTE";
+    
+    const elSenha = document.getElementById('senha-atual');
+    elSenha.innerText = c.senha;
+    elSenha.style.fontSize = c.senha.length > 15 ? '6rem' : '10rem';
+    
+    document.getElementById('local-atual').innerText = c.consultorio;
 
-        // Voz
-        const fala = new SpeechSynthesisUtterance(`Atenção. Paciente ${c.senha}. Comparecer ao ${c.consultorio}`);
-        fala.lang = 'pt-BR';
-        fala.onend = () => {
-            atualizarHistorico(c);
-            // Espera 4 segundos antes de voltar para o modo "Aguarde/Informativo"
-            timeoutEspera = setTimeout(() => iniciarModoEspera(), 4000);
-            processando = false;
-            if (fila.length > 0) processarFila();
-        };
-        window.speechSynthesis.speak(fala);
+    // --- LÓGICA DE CONCORDÂNCIA GRAMATICAL ---
+    function getPreposicao(local) {
+        const l = local.toLowerCase();
+        // Lista de termos que pedem "À" (Feminino)
+        const feminino = ["triagem", "sala", "recepção", "medicação", "sutura", "emergência", "reidratação", "observação"];
+        const ehFeminino = feminino.some(termo => l.includes(termo));
+        return ehFeminino ? "à" : "ao";
     }
 
+    const preposicao = getPreposicao(c.consultorio);
+    // A vírgula no texto cria uma pequena pausa natural na voz
+    const mensagem = `Atenção. Paciente, ${c.senha}. Comparecer, ${preposicao} ${c.consultorio}`;
+    
+    const fala = new SpeechSynthesisUtterance(mensagem);
+    fala.lang = 'pt-BR';
+    fala.rate = 0.9;  // Velocidade levemente reduzida para ficar mais claro
+    fala.pitch = 1;
+
+    fala.onend = () => {
+        atualizarHistorico(c);
+        timeoutEspera = setTimeout(() => iniciarModoEspera(), 4000);
+        processando = false;
+        if (fila.length > 0) processarFila();
+    };
+
+    window.speechSynthesis.speak(fala);
+}
     function iniciarModoEspera() {
         if(processando) return;
         document.getElementById('area-foco').classList.add('modo-espera');
