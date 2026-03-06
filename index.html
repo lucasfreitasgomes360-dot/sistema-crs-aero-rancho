@@ -144,59 +144,79 @@
         "admin": { pass: "@admin", nome: "Gestor", cargo: "Gerência", multi: true, tipo: "gerencia", unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"tira", n:"CRS Tiradentes"}, {id:"nb", n:"UPA Nova Bahia"}, {id:"uni", n:"UPA Universitário"}]}
 };
 
-    function toggleSenha() {
-        const p = document.getElementById('pass');
-        const icon = document.querySelector('.toggle-pass');
-        if(p.type === "password") {
-            p.type = "text";
-            icon.innerText = "visibility_off";
-        } else {
-            p.type = "password";
-            icon.innerText = "visibility";
-        }
-    }
-
-    function validar() {
+    async function validar() {
     const u = document.getElementById('user').value.toLowerCase().trim();
     const p = document.getElementById('pass').value;
-    const user = PROFISSIONAIS[u];
+    const msgErro = document.getElementById('msg-erro');
 
-    if(user && user.pass === p) {
-        if(user.multi) {
-            document.getElementById('card-login').classList.add('hidden');
-            document.getElementById('card-unidades').classList.remove('hidden');
-            document.getElementById('welcome').innerText = "Olá, " + user.nome.split(' ')[0];
-            
-            // Criando os botões com o tipo dinâmico:
-            document.getElementById('grid-unidades').innerHTML = user.unidades.map(un => 
-                `<div class="btn-unidade" onclick="entrar('${un.id}','${un.n}','${user.nome}','${user.cargo}', '${user.tipo || "painel"}')">${un.n}</div>`
-            ).join('');
-        } else { 
-            entrar(user.id, user.un, user.nome, user.cargo, user.tipo || "painel"); 
+    if (!u || !p) return;
+
+    // 1º Busca no Firebase
+    db.ref('profissionais/' + u).once('value').then(snap => {
+        const userDB = snap.val();
+        if (userDB) {
+            processarLogin(userDB, u, p, true);
+        } else {
+            // 2º Se não achar, busca na lista fixa do código
+            const userFixo = PROFISSIONAIS[u];
+            if (userFixo) {
+                processarLogin(userFixo, u, p, false);
+            } else {
+                msgErro.style.display = "block";
+            }
         }
-    } else { 
-        document.getElementById('msg-erro').style.display="block"; 
+    });
+}
+
+function processarLogin(user, login, senhaDigitada, isDB) {
+    if (user.pass === senhaDigitada) {
+        // Lógica de troca de senha (apenas para novos cadastros do DB)
+        if (isDB && user.trocarSenha) {
+            const nova = prompt("SEGURANÇA: Digite uma nova senha definitiva:");
+            if (nova && nova.length >= 4) {
+                db.ref('profissionais/' + login).update({ pass: nova, trocarSenha: false });
+                alert("Senha atualizada! Faça o login novamente.");
+                location.reload();
+                return;
+            }
+        }
+        entrar(user.id || 'multi', user.un || 'Múltiplas', user.nome, user.cargo, user.tipo || "painel", user.unidades);
+    } else {
+        document.getElementById('msg-erro').style.display = "block";
     }
 }
-    function entrar(id, un, nome, cargo, tipo) {
-        sessionStorage.clear();
-        sessionStorage.setItem('logado', 'true');
-        sessionStorage.setItem('u_id', id); 
-        sessionStorage.setItem('u_nome', un);
-        sessionStorage.setItem('p_nome', nome); 
-        sessionStorage.setItem('p_cargo', cargo);
-        
-        // Se for admin, ele pergunta o que quer abrir
-        if(tipo === "gerencia") {
-            const escolha = confirm("Deseja abrir a TV desta unidade?\n\n[OK] para ver a TV\n[Cancelar] para Gestão");
-            if(escolha) {
-                window.location.href = "tv.html";
-            } else {
-                window.location.href = "gerencia.html";
-            }
-            return; // Interrompe para não executar o código abaixo
-        }
 
+function entrar(id, un, nome, cargo, tipo, unidades) {
+    sessionStorage.clear();
+    sessionStorage.setItem('logado', 'true');
+    sessionStorage.setItem('u_id', id); 
+    sessionStorage.setItem('u_nome', un);
+    sessionStorage.setItem('p_nome', nome); 
+    sessionStorage.setItem('p_cargo', cargo);
+
+    if(tipo === "gerencia") {
+        const esc = confirm("Deseja abrir a TV?\n\n[OK] para TV\n[Cancelar] para Gestão");
+        window.location.href = esc ? "tv.html" : "gerencia.html";
+        return;
+    }
+
+    if(unidades) {
+        document.getElementById('card-login').classList.add('hidden');
+        document.getElementById('card-unidades').classList.remove('hidden');
+        document.getElementById('welcome').innerText = "Olá, " + nome.split(' ')[0];
+        document.getElementById('grid-unidades').innerHTML = unidades.map(u => 
+            `<div class="btn-unidade" onclick="finalizarEntrada('${u.id}','${u.n}')">${u.n}</div>`
+        ).join('');
+    } else {
+        window.location.href = "painel.html";
+    }
+}
+
+function finalizarEntrada(id, n) {
+    sessionStorage.setItem('u_id', id);
+    sessionStorage.setItem('u_nome', n);
+    window.location.href = "painel.html";
+}
         // Lógica normal para os outros usuários
         if(tipo === "tv") window.location.href = "tv.html";
         else window.location.href = "painel.html";
