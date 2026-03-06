@@ -88,29 +88,30 @@
     let fila = [], processando = false, historico = [], timeoutEspera;
     const horaLigouTV = Date.now();
 
-    // Informativos que aparecem quando não há chamadas
-    const informativos = [
-        "AGUARDE SEU NOME NA TELA",
-        "ESTEJA COM O CARTÃO DO SUS",
-        "MANTENHA O SILÊNCIO",
-        "Beba água! Hidratação é essencial para o corpo."
-        "Combate à Dengue: Não deixe água parada no seu quintal."
-    ];
-    let indexInfo = 0;
+    // 1. Corrija a lista de informativos (adicionei a vírgula que faltava)
+const informativos = [
+    "AGUARDE SEU NOME NA TELA",
+    "ESTEJA COM O CARTÃO DO SUS",
+    "MANTENHA O SILÊNCIO",
+    "Beba água! Hidratação é essencial para o corpo.", // <--- Vírgula aqui
+    "Combate à Dengue: Não deixe água parada no seu quintal."
+];
+let indexInfo = 0;
 
-    function iniciarTV() {
-        document.getElementById('bloqueio-som').style.display = 'none';
-        iniciarModoEspera();
+// 2. A função de iniciar a TV continua logo abaixo
+function iniciarTV() {
+    document.getElementById('bloqueio-som').style.display = 'none';
+    iniciarModoEspera();
 
-        db.ref(uID + '/chamada').on('value', snap => {
-            const d = snap.val();
-            if (d && d.time > horaLigouTV && (!fila.length || fila[fila.length-1].time !== d.time)) {
-                fila.push(d);
-                if(!processando) processarFila();
-            }
-        });
-    }
-
+    db.ref(uID + '/chamada').on('value', snap => {
+        const d = snap.val();
+        // Verifica se a chamada é nova (posterior ao momento que ligou a TV)
+        if (d && d.time > horaLigouTV && (!fila.length || fila[fila.length-1].time !== d.time)) {
+            fila.push(d);
+            if(!processando) processarFila();
+        }
+    });
+}
     async function processarFila() {
     if (fila.length === 0) return;
     processando = true;
