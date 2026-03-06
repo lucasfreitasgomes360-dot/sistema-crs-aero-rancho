@@ -5,75 +5,45 @@
     <title>Gerência - Controle SESAU</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
-        :root { --primary: #0f172a; --accent: #6366f1; --bg: #f8fafc; --card: #ffffff; --danger: #ef4444; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--primary); display: flex; flex-direction: column; align-items: center; }
-        
-        .container { width: 100%; max-width: 800px; }
-        .header { margin-bottom: 30px; text-align: left; width: 100%; }
-        .header h1 { font-size: 1.8rem; font-weight: 800; margin: 0; }
-        .header p { color: #64748b; margin: 5px 0; }
-
-        .card { background: var(--card); padding: 30px; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; margin-bottom: 20px; }
-        
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        :root { --primary: #0f172a; --accent: #6366f1; --bg: #f8fafc; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: var(--primary); }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: white; padding: 30px; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .full { grid-column: span 2; }
-        
-        label { font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px; display: block; }
-        input, select { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #f1f5f9; background: #f8fafc; font-family: inherit; font-weight: 600; box-sizing: border-box; }
-        input:focus { outline: none; border-color: var(--accent); background: white; }
-
-        .unidades-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .u-item { background: #f8fafc; padding: 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; border: 2px solid transparent; font-size: 0.9rem; font-weight: 600; }
+        label { font-size: 0.8rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        input, select { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #f1f5f9; font-family: inherit; font-weight: 600; box-sizing: border-box; }
+        .unidades-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .u-item { background: #f8fafc; padding: 15px; border-radius: 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; border: 2px solid transparent; }
         .u-item:has(input:checked) { border-color: var(--accent); background: #eff6ff; }
-
-        .btn-save { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 18px; font-weight: 800; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn-save { width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 20px; font-weight: 800; cursor: pointer; margin-top: 30px; transition: 0.3s; }
         .btn-save:hover { background: var(--accent); transform: translateY(-2px); }
-
-        /* Lista de Profissionais */
-        .list-container { margin-top: 20px; }
-        .prof-item { background: #f8fafc; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9; }
-        .prof-info b { display: block; font-size: 1rem; }
-        .prof-info small { color: var(--accent); font-weight: 700; }
-        .btn-del { color: var(--danger); background: none; border: none; font-weight: 700; cursor: pointer; }
-
-        /* Parte de Avisos Rápidos */
-        .grid-alerts { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 15px; }
-        .btn-alert { padding: 12px; border: none; border-radius: 12px; color: white; font-weight: 700; cursor: pointer; font-size: 0.8rem; }
-        
-        .signature { margin-top: 40px; font-size: 0.7rem; color: #94a3b8; font-weight: 700; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <div class="header">
-        <h1>Painel de Gestão</h1>
-        <p>Unidade: <span id="unidade-nome" style="color:var(--accent)">Carregando...</span></p>
+    <div style="margin-bottom: 30px;">
+        <h1 style="margin:0; font-weight:800;">Gestão de Profissionais</h1>
+        <p style="color:#64748b; margin:5px 0;">Cadastre e gerencie acessos às unidades</p>
     </div>
 
     <div class="card">
-        <label>Novo Profissional</label>
         <div class="form-grid">
-            <div><label>Usuário (Login)</label><input type="text" id="reg-user" placeholder="ex: ana.med"></div>
-            <div><label>Senha Inicial</label><input type="text" id="reg-pass" placeholder="123456"></div>
-            <div class="full"><label>Nome Completo</label><input type="text" id="reg-nome" placeholder="Nome do Médico/Enfermeiro"></div>
-            <div class="full">
-                <label>Cargo</label>
+            <div><label>Login (Usuário)</label><input type="text" id="reg-user" placeholder="ex: joao.med"></div>
+            <div><label>Senha Inicial</label><input type="text" id="reg-pass" placeholder="Senha provisória"></div>
+            <div class="full"><label>Nome Completo</label><input type="text" id="reg-nome" placeholder="Nome do profissional"></div>
+            <div class="full"><label>Cargo</label>
                 <select id="reg-cargo">
-                    <option value="Médico">Médico</option>
-                    <option value="Médica">Médica</option>
-                    <option value="Enfermeiro">Enfermeiro</option>
-                    <option value="Enfermeira">Enfermeira</option>
-                    <option value="Técnico de Enf.">Técnico de Enf.</option>
+                    <option value="Médico">Médico</option><option value="Médica">Médica</option>
+                    <option value="Enfermeiro">Enfermeiro</option><option value="Enfermeira">Enfermeira</option>
                 </select>
             </div>
         </div>
-
-        <label style="margin-top: 20px;">Liberar Unidades</label>
+        
+        <label style="margin-top: 25px;">Unidades de Atuação</label>
         <div class="unidades-grid">
             <label class="u-item"><input type="checkbox" value="aero" data-n="CRS Aero Rancho"> Aero Rancho</label>
             <label class="u-item"><input type="checkbox" value="tira" data-n="CRS Tiradentes"> Tiradentes</label>
@@ -81,45 +51,15 @@
             <label class="u-item"><input type="checkbox" value="uni" data-n="UPA Universitário"> Universitário</label>
         </div>
 
-        <button class="btn-save" onclick="salvar()">CADASTRAR E ATIVAR TROCA DE SENHA</button>
+        <button class="btn-save" onclick="salvar()">CADASTRAR E SOLICITAR TROCA DE SENHA</button>
     </div>
-
-    <div class="card">
-        <label>Profissionais no Banco de Dados</label>
-        <div id="lista-db" class="list-container">
-            </div>
-    </div>
-
-    <div class="card">
-        <label>Avisos Rápidos para TV</label>
-        <div class="grid-alerts">
-            <button class="btn-alert" style="background:#ef4444" onclick="enviarAviso('EMERGÊNCIA: PRIORIDADE TOTAL', '#ef4444')">Emergência</button>
-            <button class="btn-alert" style="background:#f59e0b" onclick="enviarAviso('SISTEMA EM MANUTENÇÃO', '#f59e0b')">Manutenção</button>
-            <button class="btn-alert" style="background:#3b82f6" onclick="enviarAviso('VISITAS: 14H ÀS 16H', '#3b82f6')">Visitas</button>
-            <button class="btn-alert" style="background:#10b981" onclick="enviarAviso('LAVE AS MÃOS', '#10b981')">Higiene</button>
-        </div>
-    </div>
-
-    <div class="signature">DESIGNED BY LUCAS FREITAS GOMES</div>
 </div>
 
 <script>
-    // Verificação de Login
-    if(sessionStorage.getItem('logado') !== 'true') window.location.href = "index.html";
-    
-    const uID = sessionStorage.getItem('u_id'); 
-    const uNome = sessionStorage.getItem('u_nome');
-    document.getElementById('unidade-nome').innerText = uNome;
-
-    // Config Firebase
-    const firebaseConfig = { 
-        apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A", 
-        databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com" 
-    };
+    const firebaseConfig = { apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A", databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Função para Salvar
     function salvar() {
         const user = document.getElementById('reg-user').value.toLowerCase().trim();
         const nome = document.getElementById('reg-nome').value.trim();
@@ -128,49 +68,11 @@
         const boxes = document.querySelectorAll('.unidades-grid input:checked');
         const unidades = Array.from(boxes).map(cb => ({ id: cb.value, n: cb.getAttribute('data-n') }));
 
-        if(!user || !nome || !pass || unidades.length === 0) {
-            alert("Por favor, preencha todos os campos e selecione ao menos uma unidade.");
-            return;
-        }
+        if(!user || !nome || !pass || unidades.length === 0) return alert("Preencha todos os campos!");
 
         db.ref('profissionais/' + user).set({
             nome, pass, cargo, multi: true, unidades, trocarSenha: true
-        }).then(() => {
-            alert("Profissional cadastrado! Ele deverá trocar a senha no primeiro acesso.");
-            document.getElementById('reg-user').value = "";
-            document.getElementById('reg-nome').value = "";
-            document.getElementById('reg-pass').value = "";
-        });
-    }
-
-    // Listar Profissionais em Tempo Real
-    db.ref('profissionais').on('value', snap => {
-        const dados = snap.val();
-        let html = "";
-        for(let id in dados) {
-            if(id === 'admin') continue; // Oculta o admin principal da lista de exclusão
-            html += `
-                <div class="prof-item">
-                    <div class="prof-info">
-                        <b>${dados[id].nome}</b>
-                        <small>${dados[id].cargo} | ID: ${id}</small>
-                    </div>
-                    <button class="btn-del" onclick="remover('${id}')">Excluir</button>
-                </div>
-            `;
-        }
-        document.getElementById('lista-db').innerHTML = html || "<small>Nenhum profissional cadastrado no banco.</small>";
-    });
-
-    function remover(id) {
-        if(confirm("Deseja realmente remover o acesso de " + id + "?")) {
-            db.ref('profissionais/' + id).remove();
-        }
-    }
-
-    function enviarAviso(texto, cor) {
-        db.ref(uID + '/aviso').set({ texto, cor, time: Date.now() });
-        alert("Aviso enviado para a TV!");
+        }).then(() => { alert("Profissional cadastrado com sucesso!"); location.reload(); });
     }
 </script>
 </body>
