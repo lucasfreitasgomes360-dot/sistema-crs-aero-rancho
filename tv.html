@@ -50,7 +50,7 @@
     <header>
         <div class="logo-area">
             <h1 id="unidade-nome" style="margin:0">Carregando...</h1>
-            <p style="color:#94a3b8;margin:0; font-weight: 700;">REDE MUNICIPAL DE SAÚDE</p>
+            <p style="color:#94a3b8;margin:0; font-weight: 700;">SECRETARIA MUNICIPAL DE SAÚDE</p>
         </div>
         <div class="relogio" id="relogio">00:00</div>
     </header>
@@ -70,11 +70,12 @@
 
     <div id="card-aviso"></div>
 
-    <footer>
-        <div class="marquee-text" id="marquee-txt">Mantenha seus documentos em mãos • Atendimento prioritário para idosos e gestantes.</div>
-        <div style="position:absolute;right:10px;bottom:2px;font-size:0.6rem;color:rgba(255,255,255,0.5);">DESIGNED BY LUCAS FREITAS GOMES</div>
-    </footer>
-
+    <footer style="background: #e11d48; height: 60px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+    <div class="marquee-text" id="marquee-txt">Bem-vindo(a)! Sua saúde é nossa prioridade. • Mantenha seus documentos em mãos • Atendimento prioritário para idosos e gestantes.</div>
+    <div style="position: absolute; right: 20px; bottom: 5px; font-size: 0.6rem; color: rgba(255,255,255,0.6); font-weight: 800; letter-spacing: 1px;">
+        DESENVOLVIDO POR LUCAS FREITAS GOMES © 2026
+    </div>
+</footer>
 <script>
     const uID = sessionStorage.getItem('u_id');
     const uNome = sessionStorage.getItem('u_nome');
@@ -92,7 +93,8 @@
         "AGUARDE SEU NOME NA TELA",
         "ESTEJA COM O CARTÃO DO SUS",
         "MANTENHA O SILÊNCIO",
-        "SISTEMA INTEGRADO SESAU CG"
+        "Beba água! Hidratação é essencial para o corpo."
+        "Combate à Dengue: Não deixe água parada no seu quintal."
     ];
     let indexInfo = 0;
 
@@ -139,7 +141,7 @@
 
     const preposicao = getPreposicao(c.consultorio);
     // A vírgula no texto cria uma pequena pausa natural na voz
-    const mensagem = `Atenção. Paciente, ${c.senha}. Comparecer, ${preposicao} ${c.consultorio}`;
+    const mensagem = `Atenção. Paciente, ${c.senha}. Dirija-se, ${preposicao} ${c.consultorio}`;
     
     const fala = new SpeechSynthesisUtterance(mensagem);
     fala.lang = 'pt-BR';
