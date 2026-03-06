@@ -6,66 +6,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     <style>
         :root { --primary: #0f172a; --accent: #3b82f6; --bg: #f8fafc; --error: #ef4444; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        .login-card { background: white; width: 100%; max-width: 400px; padding: 45px 35px; border-radius: 40px; box-shadow: 0 30px 60px rgba(0,0,0,0.05); text-align: center; }
-        .logo { width: 80px; height: 80px; background: var(--primary); border-radius: 22px; margin: 0 auto 25px; display: flex; justify-content: center; align-items: center; color: white; }
-        h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 8px; color: var(--primary); letter-spacing: -0.5px; }
-        p { color: #64748b; font-size: 0.95rem; margin-bottom: 35px; }
-        .input-group { position: relative; margin-bottom: 15px; text-align: left; }
-        .input-group span { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 20px; }
-        input { width: 100%; padding: 16px 15px 16px 45px; border-radius: 16px; border: 2px solid #f1f5f9; background: #f8fafc; font-family: inherit; font-size: 1rem; font-weight: 600; box-sizing: border-box; transition: 0.3s; }
-        input:focus { outline: none; border-color: var(--accent); background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
-        .btn-login { width: 100%; padding: 18px; border: none; border-radius: 18px; background: var(--primary); color: white; font-size: 1rem; font-weight: 800; cursor: pointer; margin-top: 20px; transition: 0.3s; box-shadow: 0 10px 20px rgba(15, 23, 42, 0.1); }
-        .btn-login:hover { transform: translateY(-2px); background: #1e293b; }
-        #msg-erro { color: var(--error); font-size: 0.85rem; font-weight: 700; margin-top: 15px; display: none; }
+        .login-card { background: white; width: 100%; max-width: 400px; padding: 45px 35px; border-radius: 40px; box-shadow: 0 30px 60px rgba(0,0,0,0.05); text-align: center; border: 1px solid rgba(0,0,0,0.03); animation: fadeIn 0.5s ease; }
+        .icon-box { width: 65px; height: 65px; background: #eff6ff; color: var(--accent); border-radius: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+        h1 { font-size: 1.7rem; font-weight: 800; color: var(--primary); margin: 0 0 5px 0; }
+        .sub { color: #94a3b8; font-size: 0.9rem; margin-bottom: 30px; font-weight: 600; display: block; }
+        
+        .input-group { margin-bottom: 15px; width: 100%; position: relative; }
+        input { width: 100%; padding: 18px 20px; border-radius: 20px; border: 2px solid #f1f5f9; font-size: 1rem; font-family: inherit; font-weight: 600; box-sizing: border-box; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--accent); background: #fff; }
+        
+        .toggle-pass { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8; user-select: none; }
+        .toggle-pass:hover { color: var(--accent); }
+
+        .btn-entrar { width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 20px; font-size: 1rem; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-entrar:hover { background: var(--accent); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2); }
+        
+        .unidade-grid { display: grid; gap: 12px; margin-top: 20px; }
+        .btn-unidade { padding: 20px; background: #f8fafc; border: 2px solid #f1f5f9; border-radius: 20px; cursor: pointer; font-weight: 700; color: #475569; transition: 0.3s; }
+        .btn-unidade:hover { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
+        
         .hidden { display: none !important; }
-        .btn-unidade { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 12px; background: #f1f5f9; border: 2px solid transparent; cursor: pointer; font-weight: 700; transition: 0.2s; text-align: center; }
-        .btn-unidade:hover { border-color: var(--accent); background: #eff6ff; }
+        .signature { margin-top: 30px; font-size: 0.6rem; font-weight: 800; color: #cbd5e1; letter-spacing: 2px; text-transform: uppercase; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="login-card" id="card-login">
-        <div class="logo">
-            <span class="material-symbols-rounded" style="font-size: 40px;">health_metrics</span>
-        </div>
-        <h1>Bem-vindo</h1>
-        <p>Acesse o sistema de chamadas</p>
-
+        <div class="icon-box"><span class="material-symbols-rounded">shield_person</span></div>
+        <h1>Sistema Integrado de Chamadas</h1>
+        <span class="sub">Acesso Identificado</span>
+        
         <div class="input-group">
-            <span class="material-symbols-rounded">person</span>
             <input type="text" id="user" placeholder="Usuário">
         </div>
-
+        
         <div class="input-group">
-            <span class="material-symbols-rounded">lock</span>
             <input type="password" id="pass" placeholder="Senha">
+            <span class="material-symbols-rounded toggle-pass" onclick="toggleSenha()">visibility</span>
         </div>
-
-        <button class="btn-login" onclick="validar()">ACESSAR SISTEMA</button>
-        <div id="msg-erro">Usuário ou senha incorretos</div>
+        
+        <button class="btn-entrar" onclick="validar()">Acessar Sistema</button>
+        <div id="msg-erro" style="color:var(--error); font-size:0.8rem; margin-top:15px; display:none; font-weight: 700;">Usuário ou senha incorretos.</div>
+        <div class="signature">Designed by Lucas Freitas Gomes © 2026</div>
     </div>
 
     <div class="login-card hidden" id="card-unidades">
-        <h1 id="welcome">Olá</h1>
-        <p>Escolha onde você está hoje:</p>
-        <div id="grid-unidades"></div>
+        <div class="icon-box" style="background:#fff7ed; color:#f97316;"><span class="material-symbols-rounded">location_on</span></div>
+        <h1 id="welcome">Olá!</h1>
+        <span class="sub">Selecione a unidade de hoje</span>
+        <div class="unidade-grid" id="grid-unidades"></div>
+        <div class="signature">Designed by Lucas Freitas Gomes © 2026</div>
     </div>
 
 <script>
-    // Configuração do Firebase
-    const firebaseConfig = { 
-        apiKey: "AIzaSyBRe3t7YCWUkggxBjE6d4OS4on4MrJ5J1A", 
-        databaseURL: "https://sistema-crs-aero-rancho-default-rtdb.firebaseio.com" 
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // LISTA FIXA (Pode manter os seus aqui)
     const PROFISSIONAIS = {
         "lucas.med": { pass: "@2026", nome: "Drº. Lucas Freitas", cargo: "Médico", multi: true, unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"tira", n:"CRS Tiradentes"}, {id:"nb", n:"UPA Nova Bahia"}, {id:"uni", n:"UPA Universitário"}]},
         "henrique.med": { pass: "@2026", nome: "Drº. Henrique Pereira Alves", cargo: "Médico", multi: true, unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"tira", n:"CRS Tiradentes"}, {id:"nb", n:"UPA Nova Bahia"}, {id:"uni", n:"UPA Universitário"}]},
@@ -144,111 +141,67 @@
         "tv.tira": { pass: "@tv2026", nome: "TV", cargo: "TV", multi: false, id: "tira", un: "CRS Tiradentes", tipo: "tv" },
         "tv.uni": { pass: "@tv2026", nome: "TV", cargo: "TV", multi: false, id: "uni", un: "UPA Universitário", tipo: "tv" },
         "tv.nb": { pass: "@tv2026", nome: "TV", cargo: "TV", multi: false, id: "nb", un: "UPA Nova Bahia", tipo: "tv" }, 
-        "admin": { pass: "@admin", nome: "Lucas Freitas Gomes", cargo: "Gerência", multi: true, tipo: "gerencia", unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"tira", n:"CRS Tiradentes"}, {id:"nb", n:"UPA Nova Bahia"}, {id:"uni", n:"UPA Universitário"}] }
-    };
+        "admin": { pass: "@admin", nome: "Gestor", cargo: "Gerência", multi: true, tipo: "gerencia", unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"tira", n:"CRS Tiradentes"}, {id:"nb", n:"UPA Nova Bahia"}, {id:"uni", n:"UPA Universitário"}]}
+};
 
-    async function validar() {
-        const u = document.getElementById('user').value.toLowerCase().trim();
-        const p = document.getElementById('pass').value;
-        const msgErro = document.getElementById('msg-erro');
-        msgErro.style.display = "none";
-
-        if (!u || !p) return;
-
-        // 1. Tenta no Banco de Dados
-        db.ref('profissionais/' + u).once('value').then(snap => {
-            const userDB = snap.val();
-
-            if (userDB) {
-                conferirSenha(userDB, u, p, true);
-            } else {
-                // 2. Tenta na lista fixa
-                const userFixo = PROFISSIONAIS[u];
-                if (userFixo) {
-                    conferirSenha(userFixo, u, p, false);
-                } else {
-                    msgErro.style.display = "block";
-                }
-            }
-        });
-    }
-
-    function conferirSenha(user, login, senhaDigitada, isDB) {
-        if (user.pass === senhaDigitada) {
-            
-            // Troca de senha obrigatória para novos no DB
-            if (isDB && user.trocarSenha) {
-                const nova = prompt("Segurança: Digite uma nova senha definitiva:");
-                if (nova && nova.length >= 4) {
-                    db.ref('profissionais/' + login).update({ pass: nova, trocarSenha: false });
-                    alert("Senha alterada! Faça login novamente.");
-                    location.reload();
-                    return;
-                } else {
-                    alert("Senha inválida.");
-                    return;
-                }
-            }
-
-            logar(user);
+    function toggleSenha() {
+        const p = document.getElementById('pass');
+        const icon = document.querySelector('.toggle-pass');
+        if(p.type === "password") {
+            p.type = "text";
+            icon.innerText = "visibility_off";
         } else {
-            document.getElementById('msg-erro').style.display = "block";
+            p.type = "password";
+            icon.innerText = "visibility";
         }
     }
 
-    function logar(user) {
+    function validar() {
+    const u = document.getElementById('user').value.toLowerCase().trim();
+    const p = document.getElementById('pass').value;
+    const user = PROFISSIONAIS[u];
+
+    if(user && user.pass === p) {
+        if(user.multi) {
+            document.getElementById('card-login').classList.add('hidden');
+            document.getElementById('card-unidades').classList.remove('hidden');
+            document.getElementById('welcome').innerText = "Olá, " + user.nome.split(' ')[0];
+            
+            // Criando os botões com o tipo dinâmico:
+            document.getElementById('grid-unidades').innerHTML = user.unidades.map(un => 
+                `<div class="btn-unidade" onclick="entrar('${un.id}','${un.n}','${user.nome}','${user.cargo}', '${user.tipo || "painel"}')">${un.n}</div>`
+            ).join('');
+        } else { 
+            entrar(user.id, user.un, user.nome, user.cargo, user.tipo || "painel"); 
+        }
+    } else { 
+        document.getElementById('msg-erro').style.display="block"; 
+    }
+}
+    function entrar(id, un, nome, cargo, tipo) {
         sessionStorage.clear();
         sessionStorage.setItem('logado', 'true');
-        sessionStorage.setItem('p_nome', user.nome);
-        sessionStorage.setItem('p_cargo', user.cargo);
-
-        // Se for Gerente (Lucas)
-        if (user.tipo === "gerencia") {
-            const vaiTV = confirm("Deseja abrir a TV?\n\n[OK] Sim, abrir TV\n[Cancelar] Não, ir para Gestão");
-            // Se ele for gerente, geralmente ele atua na unidade que ele escolher ou na padrão
-            if (user.multi) {
-                mostrarUnidades(user);
-                sessionStorage.setItem('is_admin_tv', vaiTV ? "sim" : "nao");
+        sessionStorage.setItem('u_id', id); 
+        sessionStorage.setItem('u_nome', un);
+        sessionStorage.setItem('p_nome', nome); 
+        sessionStorage.setItem('p_cargo', cargo);
+        
+        // Se for admin, ele pergunta o que quer abrir
+        if(tipo === "gerencia") {
+            const escolha = confirm("Deseja abrir a TV desta unidade?\n\n[OK] para ver a TV\n[Cancelar] para Gestão");
+            if(escolha) {
+                window.location.href = "tv.html";
             } else {
-                sessionStorage.setItem('u_id', user.id);
-                sessionStorage.setItem('u_nome', user.un);
-                window.location.href = vaiTV ? "tv.html" : "gerencia.html";
+                window.location.href = "gerencia.html";
             }
-            return;
+            return; // Interrompe para não executar o código abaixo
         }
 
-        // Se for Profissional comum
-        if (user.multi) {
-            mostrarUnidades(user);
-        } else {
-            sessionStorage.setItem('u_id', user.id);
-            sessionStorage.setItem('u_nome', user.un);
-            window.location.href = "painel.html";
-        }
-    }
-
-    function mostrarUnidades(user) {
-        document.getElementById('card-login').classList.add('hidden');
-        document.getElementById('card-unidades').classList.remove('hidden');
-        document.getElementById('welcome').innerText = "Olá, " + user.nome.split(' ')[0];
-        
-        const grid = document.getElementById('grid-unidades');
-        grid.innerHTML = user.unidades.map(un => 
-            `<div class="btn-unidade" onclick="finalizarLogin('${un.id}','${un.n}','${user.tipo}')">${un.n}</div>`
-        ).join('');
-    }
-
-    function finalizarLogin(id, nome, tipo) {
-        sessionStorage.setItem('u_id', id);
-        sessionStorage.setItem('u_nome', nome);
-        
-        if (tipo === "gerencia") {
-            const querTV = sessionStorage.getItem('is_admin_tv');
-            window.location.href = (querTV === "sim") ? "tv.html" : "gerencia.html";
-        } else {
-            window.location.href = "painel.html";
-        }
+        // Lógica normal para os outros usuários
+        if(tipo === "tv") window.location.href = "tv.html";
+        else window.location.href = "painel.html";
     }
 </script>
 </body>
+
 </html>
