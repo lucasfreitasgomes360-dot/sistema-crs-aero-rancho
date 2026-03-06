@@ -51,7 +51,7 @@
         
         <button class="btn-entrar" onclick="validar()">Acessar Sistema</button>
         <div id="msg-erro" style="color:var(--error); font-size:0.8rem; margin-top:15px; display:none; font-weight: 700;">Usuário ou senha incorretos.</div>
-        <div class="signature">Designed by Lucas Freitas Gomes</div>
+        <div class="signature">Designed by Lucas Freitas Gomes © 2026</div>
     </div>
 
     <div class="login-card hidden" id="card-unidades">
@@ -59,7 +59,7 @@
         <h1 id="welcome">Olá!</h1>
         <span class="sub">Selecione a unidade de hoje</span>
         <div class="unidade-grid" id="grid-unidades"></div>
-        <div class="signature">Designed by Lucas Freitas Gomes</div>
+        <div class="signature">Designed by Lucas Freitas Gomes © 2026</div>
     </div>
 
 <script>
@@ -141,7 +141,7 @@
         "tv.tira": { pass: "@tv2026", nome: "TV", cargo: "TV", multi: false, id: "tira", un: "CRS Tiradentes", tipo: "tv" },
         "tv.uni": { pass: "@tv2026", nome: "TV", cargo: "TV", multi: false, id: "uni", un: "UPA Universitário", tipo: "tv" },
         "tv.nb": { pass: "@tv2026", nome: "TV", cargo: "TV", multi: false, id: "nb", un: "UPA Nova Bahia", tipo: "tv" },
-        "admin": { pass: "@admin", nome: "Gestor", cargo: "Gerência", multi: false, id: "aero", un: "CRS Aero Rancho", tipo: "gerencia" }
+        "admin": { pass: "@admin", nome: "Gestor", cargo: "Gerência", multi: true, unidades: [{id:"aero", n:"CRS Aero Rancho"}, {id:"tira", n:"CRS Tiradentes"}, {id:"nb", n:"UPA Nova Bahia"}, {id:"uni", n:"UPA Universitário"}]}, tipo: "gerencia" }
     };
 
     function toggleSenha() {
