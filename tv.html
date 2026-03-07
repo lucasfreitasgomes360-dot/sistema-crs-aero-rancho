@@ -163,7 +163,7 @@
         }
 
         const preposicao = getPreposicao(c.consultorio);
-        const mensagem = `Atenção. Paciente, ${c.senha}. Dirija-se, ${preposicao} ${c.consultorio}`;
+        const mensagem = `Atenção. Paciente, ${c.senha}. Dirija-se ${preposicao} ${c.consultorio}`;
         
         const fala = new SpeechSynthesisUtterance(mensagem);
         fala.lang = 'pt-BR';
