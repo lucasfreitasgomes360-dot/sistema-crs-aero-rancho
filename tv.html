@@ -18,14 +18,38 @@
 
         .main-content { flex: 1; display: flex; overflow: hidden; }
         
-        /* Área Principal de Chamada */
-        .chamada-foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); transition: all 0.5s ease; position: relative; }
+        /* Área Principal de Chamada Adaptável */
+        .chamada-foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); transition: all 0.5s ease; position: relative; padding: 20px; text-align: center; }
         
-        #senha-atual { font-size: 10rem; font-weight: 800; color: #fff; line-height: 0.9; text-align: center; width: 90%; transition: 0.3s; word-wrap: break-word; }
-        #local-atual { font-size: 5rem; color: var(--accent); font-weight: 700; text-transform: uppercase; margin-top: 20px; }
+        /* Ajuste de Fonte Responsiva */
+        #senha-atual { 
+            font-size: clamp(4rem, 10vw, 12vw); 
+            font-weight: 800; 
+            color: #fff; 
+            line-height: 1.1; 
+            width: 95%; 
+            transition: 0.3s; 
+            word-wrap: break-word; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            min-height: 40vh;
+        }
+        
+        #local-atual { 
+            font-size: clamp(2rem, 5vw, 6vw); 
+            color: var(--accent); 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            margin-top: 20px; 
+        }
 
-        /* Estilo para quando a tela está em espera */
-        .modo-espera #senha-atual { font-size: 3.5rem; color: var(--accent); opacity: 0.8; }
+        /* Estilo para quando a tela está em espera (Informativos) */
+        .modo-espera #senha-atual { 
+            font-size: clamp(2.5rem, 6vw, 7vw); 
+            color: var(--accent); 
+            opacity: 0.8; 
+        }
         .modo-espera #local-atual { display: none; }
         .modo-espera #txt-status { font-size: 1.5rem; color: #64748b; margin-bottom: 20px; }
 
@@ -68,14 +92,13 @@
         </div>
     </div>
 
-    <div id="card-aviso"></div>
-
     <footer style="background: #e11d48; height: 60px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-    <div class="marquee-text" id="marquee-txt">Bem-vindo(a)! Sua saúde é nossa prioridade. • Mantenha seus documentos em mãos • Atendimento prioritário para idosos e gestantes.</div>
-    <div style="position: absolute; right: 20px; bottom: 5px; font-size: 0.6rem; color: rgba(255,255,255,0.6); font-weight: 800; letter-spacing: 1px;">
-        DESENVOLVIDO POR LUCAS FREITAS GOMES © 2026
-    </div>
-</footer>
+        <div class="marquee-text" id="marquee-txt">Bem-vindo(a)! Sua saúde é nossa prioridade. • Mantenha seus documentos em mãos • Atendimento prioritário para idosos e gestantes.</div>
+        <div style="position: absolute; right: 20px; bottom: 5px; font-size: 0.6rem; color: rgba(255,255,255,0.6); font-weight: 800; letter-spacing: 1px;">
+            DESENVOLVIDO POR LUCAS FREITAS GOMES © 2026
+        </div>
+    </footer>
+
 <script>
     const uID = sessionStorage.getItem('u_id');
     const uNome = sessionStorage.getItem('u_nome');
@@ -88,86 +111,81 @@
     let fila = [], processando = false, historico = [], timeoutEspera;
     const horaLigouTV = Date.now();
 
-    // 1. Corrija a lista de informativos (adicionei a vírgula que faltava)
-const informativos = [
-    "AGUARDE SEU NOME NA TELA",
-    "ESTEJA COM O CARTÃO DO SUS",
-    "MANTENHA O SILÊNCIO",
-    "Beba água! Hidratação é essencial para o corpo.", // <--- Vírgula aqui
-    "Combate à Dengue: Não deixe água parada no seu quintal."
-];
-let indexInfo = 0;
+    const informativos = [
+        "AGUARDE SEU NOME NA TELA",
+        "ESTEJA COM O CARTÃO DO SUS",
+        "MANTENHA O SILÊNCIO",
+        "Beba água! Hidratação é essencial para o corpo.",
+        "Combate à Dengue: Não deixe água parada no seu quintal."
+    ];
+    let indexInfo = 0;
 
-// 2. A função de iniciar a TV continua logo abaixo
-function iniciarTV() {
-    document.getElementById('bloqueio-som').style.display = 'none';
-    iniciarModoEspera();
+    function iniciarTV() {
+        document.getElementById('bloqueio-som').style.display = 'none';
+        iniciarModoEspera();
 
-    db.ref(uID + '/chamada').on('value', snap => {
-        const d = snap.val();
-        // Verifica se a chamada é nova (posterior ao momento que ligou a TV)
-        if (d && d.time > horaLigouTV && (!fila.length || fila[fila.length-1].time !== d.time)) {
-            fila.push(d);
-            if(!processando) processarFila();
-        }
-    });
-}
-    async function processarFila() {
-    if (fila.length === 0) return;
-    processando = true;
-    clearTimeout(timeoutEspera);
-    
-    const c = fila.shift();
-    
-    // Som de Chamada
-    new Audio('https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3').play();
-
-    document.getElementById('area-foco').classList.remove('modo-espera');
-    document.getElementById('txt-status').innerText = "PACIENTE";
-    
-    const elSenha = document.getElementById('senha-atual');
-    elSenha.innerText = c.senha;
-    elSenha.style.fontSize = c.senha.length > 15 ? '6rem' : '10rem';
-    
-    document.getElementById('local-atual').innerText = c.consultorio;
-
-    // --- LÓGICA DE CONCORDÂNCIA GRAMATICAL ---
-    function getPreposicao(local) {
-        const l = local.toLowerCase();
-        // Lista de termos que pedem "À" (Feminino)
-        const feminino = ["triagem", "sala", "recepção", "medicação", "sutura", "emergência", "reidratação", "observação"];
-        const ehFeminino = feminino.some(termo => l.includes(termo));
-        return ehFeminino ? "à" : "ao";
+        db.ref(uID + '/chamada').on('value', snap => {
+            const d = snap.val();
+            if (d && d.time > horaLigouTV && (!fila.length || fila[fila.length-1].time !== d.time)) {
+                fila.push(d);
+                if(!processando) processarFila();
+            }
+        });
     }
 
-    const preposicao = getPreposicao(c.consultorio);
-    // A vírgula no texto cria uma pequena pausa natural na voz
-    const mensagem = `Atenção. Paciente, ${c.senha}. Dirija-se, ${preposicao} ${c.consultorio}`;
-    
-    const fala = new SpeechSynthesisUtterance(mensagem);
-    fala.lang = 'pt-BR';
-    fala.rate = 0.9;  // Velocidade levemente reduzida para ficar mais claro
-    fala.pitch = 1;
+    async function processarFila() {
+        if (fila.length === 0) return;
+        processando = true;
+        clearTimeout(timeoutEspera);
+        
+        const c = fila.shift();
+        new Audio('https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3').play();
 
-    fala.onend = () => {
-        atualizarHistorico(c);
-        timeoutEspera = setTimeout(() => iniciarModoEspera(), 4000);
-        processando = false;
-        if (fila.length > 0) processarFila();
-    };
+        document.getElementById('area-foco').classList.remove('modo-espera');
+        document.getElementById('txt-status').innerText = "PACIENTE";
+        
+        const elSenha = document.getElementById('senha-atual');
+        elSenha.innerText = c.senha;
+        
+        // Ajuste extra para nomes extremamente longos
+        if (c.senha.length > 20) {
+            elSenha.style.fontSize = 'clamp(2.5rem, 7vw, 8vw)';
+        } else {
+            elSenha.style.fontSize = ''; // Usa o padrão do CSS
+        }
+        
+        document.getElementById('local-atual').innerText = c.consultorio;
 
-    window.speechSynthesis.speak(fala);
-}
+        function getPreposicao(local) {
+            const l = local.toLowerCase();
+            const feminino = ["triagem", "sala", "recepção", "medicação", "sutura", "emergência", "reidratação", "observação"];
+            return feminino.some(termo => l.includes(termo)) ? "à" : "ao";
+        }
+
+        const preposicao = getPreposicao(c.consultorio);
+        const mensagem = `Atenção. Paciente, ${c.senha}. Dirija-se, ${preposicao} ${c.consultorio}`;
+        
+        const fala = new SpeechSynthesisUtterance(mensagem);
+        fala.lang = 'pt-BR';
+        fala.rate = 0.9;
+        fala.pitch = 1;
+
+        fala.onend = () => {
+            atualizarHistorico(c);
+            timeoutEspera = setTimeout(() => iniciarModoEspera(), 4000);
+            processando = false;
+            if (fila.length > 0) processarFila();
+        };
+
+        window.speechSynthesis.speak(fala);
+    }
+
     function iniciarModoEspera() {
         if(processando) return;
         document.getElementById('area-foco').classList.add('modo-espera');
         document.getElementById('txt-status').innerText = "INFORMATIVO";
-        
-        // Rotaciona os informativos
         document.getElementById('senha-atual').innerText = informativos[indexInfo];
         indexInfo = (indexInfo + 1) % informativos.length;
-        
-        // Troca o informativo a cada 6 segundos se não houver chamada
         timeoutEspera = setTimeout(() => iniciarModoEspera(), 6000);
     }
 
