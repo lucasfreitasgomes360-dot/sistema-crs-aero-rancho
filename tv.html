@@ -166,9 +166,25 @@
         const mensagem = `Atenção. Paciente, ${c.senha}. Dirija-se ${preposicao} ${c.consultorio}`;
         
         const fala = new SpeechSynthesisUtterance(mensagem);
+        
+        // 1. Buscar vozes disponíveis
+        const vozes = window.speechSynthesis.getVoices();
+        
+        // 2. Tentar encontrar a voz do Google (Natural) ou Microsoft (Neural)
+        // Essas vozes são muito superiores às padrão do sistema
+        let vozAutoritaria = vozes.find(v => v.name.includes('Google') && v.lang === 'pt-BR') || 
+                             vozes.find(v => v.name.includes('Neural') && v.lang === 'pt-BR') ||
+                             vozes.find(v => v.lang === 'pt-BR');
+
+        if (vozAutoritaria) {
+            fala.voice = vozAutoritaria;
+        }
+
+        // 3. Ajustes para tom de Autoridade (Não robotizado)
         fala.lang = 'pt-BR';
-        fala.rate = 0.9;
-        fala.pitch = 1;
+        fala.rate = 1.05;  // Velocidade levemente firme
+        fala.pitch = 0.85; // Tom um pouco mais grave para passar seriedade
+        fala.volume = 1;   // Volume máximo
 
         fala.onend = () => {
             atualizarHistorico(c);
@@ -178,8 +194,6 @@
         };
 
         window.speechSynthesis.speak(fala);
-    }
-
     function iniciarModoEspera() {
         if(processando) return;
         document.getElementById('area-foco').classList.add('modo-espera');
