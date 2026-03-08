@@ -18,10 +18,8 @@
 
         .main-content { flex: 1; display: flex; overflow: hidden; }
         
-        /* Área Principal de Chamada Adaptável */
         .chamada-foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); transition: all 0.5s ease; position: relative; padding: 20px; text-align: center; }
         
-        /* Ajuste de Fonte Responsiva */
         #senha-atual { 
             font-size: clamp(4rem, 10vw, 12vw); 
             font-weight: 800; 
@@ -44,7 +42,6 @@
             margin-top: 20px; 
         }
 
-        /* Estilo para quando a tela está em espera (Informativos) */
         .modo-espera #senha-atual { 
             font-size: clamp(2.5rem, 6vw, 7vw); 
             color: var(--accent); 
@@ -62,9 +59,6 @@
         footer { background: #e11d48; height: 60px; display: flex; align-items: center; position: relative; overflow: hidden; }
         .marquee-text { display: inline-block; font-size: 1.8rem; font-weight: 800; color: white; white-space: nowrap; padding-left: 100%; animation: marquee 30s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
-
-        #card-aviso { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(600px); width: 80%; background: white; border-radius: 35px; box-shadow: 0 40px 80px rgba(0,0,0,0.7); transition: 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000; padding: 40px; font-size: 2.8rem; font-weight: 800; color: #0f172a; text-align: center; }
-        #card-aviso.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
@@ -100,6 +94,13 @@
     </footer>
 
 <script>
+    // --- DESPERTADOR DE VOZES (Início do Script) ---
+    window.speechSynthesis.getVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+    }
+    // -----------------------------------------------
+
     const uID = sessionStorage.getItem('u_id');
     const uNome = sessionStorage.getItem('u_nome');
     document.getElementById('unidade-nome').innerText = uNome || "Unidade de Saúde";
@@ -147,11 +148,10 @@
         const elSenha = document.getElementById('senha-atual');
         elSenha.innerText = c.senha;
         
-        // Ajuste extra para nomes extremamente longos
         if (c.senha.length > 20) {
             elSenha.style.fontSize = 'clamp(2.5rem, 7vw, 8vw)';
         } else {
-            elSenha.style.fontSize = ''; // Usa o padrão do CSS
+            elSenha.style.fontSize = ''; 
         }
         
         document.getElementById('local-atual').innerText = c.consultorio;
@@ -165,25 +165,20 @@
         const preposicao = getPreposicao(c.consultorio);
         const mensagem = `Atenção. Paciente, ${c.senha}. Dirija-se ${preposicao} ${c.consultorio}`;
         
-        const mensagem = `Atenção. Paciente, ${c.senha}. Dirija-se ${preposicao} ${c.consultorio}`;
-        
+        // --- CONFIGURAÇÃO DA FALA MASCULINA ---
         const fala = new SpeechSynthesisUtterance(mensagem);
         const vozes = window.speechSynthesis.getVoices();
 
-        // 1. Procurar vozes masculinas conhecidas por serem mais naturais e sérias
-        let vozMasculina = vozes.find(v => 
-            (v.name.includes('Google') || v.name.includes('Microsoft') || v.name.includes('Daniel') || v.name.includes('Antonio')) 
-            && v.lang === 'pt-BR' 
-            && (v.name.toLowerCase().includes('male') || v.name.includes('Daniel') || v.name.includes('Antonio') || v.name.includes('Ricardo'))
-        ) || vozes.find(v => v.lang === 'pt-BR'); // Se não achar a específica, pega a primeira em PT-BR
+        // Tenta encontrar vozes masculinas de qualidade (Google, Antonio, Ricardo, Daniel)
+        let vozEscolhida = vozes.find(v => 
+            (v.name.includes('Google') || v.name.includes('Antonio') || v.name.includes('Ricardo') || v.name.includes('Daniel')) 
+            && v.lang === 'pt-BR'
+        ) || vozes.find(v => v.lang === 'pt-BR');
 
-        fala.voice = vozMasculina;
+        fala.voice = vozEscolhida;
         fala.lang = 'pt-BR';
-
-        // 2. Ajustes de "Autoridade Masculina"
-        fala.rate = 1.0;   // Velocidade normal e firme
-        fala.pitch = 0.8;  // Deixa a voz MAIS GRAVE (essencial para parecer autoritária)
-        fala.volume = 1.0; // Volume total
+        fala.rate = 1.0;   // Velocidade firme
+        fala.pitch = 0.8;  // Tom mais grave (Autoritário)
 
         fala.onend = () => {
             atualizarHistorico(c);
@@ -195,7 +190,7 @@
         window.speechSynthesis.speak(fala);
     }
 
-    function iniciarModoEspera() {    
+    function iniciarModoEspera() {
         if(processando) return;
         document.getElementById('area-foco').classList.add('modo-espera');
         document.getElementById('txt-status').innerText = "INFORMATIVO";
