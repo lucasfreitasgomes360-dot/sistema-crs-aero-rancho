@@ -197,9 +197,26 @@
 
     function iniciarModoEspera() {
         if(processando) return;
+        
         document.getElementById('area-foco').classList.add('modo-espera');
         document.getElementById('txt-status').innerText = "INFORMATIVO";
-        document.getElementById('senha-atual').innerText = informativos[indexInfo];
+        
+        const elSenha = document.getElementById('senha-atual');
+        const textoInformativo = informativos[indexInfo];
+        elSenha.innerText = textoInformativo;
+
+        // --- LÓGICA DE ADAPTAÇÃO PARA OS AVISOS ---
+        const tamanhoAviso = textoInformativo.length;
+        
+        if (tamanhoAviso > 50) {
+            elSenha.style.fontSize = 'clamp(1.5rem, 4vw, 5vw)'; // Frases muito longas
+        } else if (tamanhoAviso > 30) {
+            elSenha.style.fontSize = 'clamp(2rem, 5vw, 6vw)';   // Frases médias
+        } else {
+            elSenha.style.fontSize = ''; // Tamanho padrão do modo-espera no CSS
+        }
+        // ------------------------------------------
+
         indexInfo = (indexInfo + 1) % informativos.length;
         timeoutEspera = setTimeout(() => iniciarModoEspera(), 6000);
     }
