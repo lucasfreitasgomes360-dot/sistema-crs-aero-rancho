@@ -19,19 +19,19 @@
         .main-content { flex: 1; display: flex; overflow: hidden; }
         
         .chamada-foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); transition: all 0.5s ease; position: relative; padding: 20px; text-align: center; }
-        
+               
         #senha-atual { 
-            font-size: clamp(4rem, 10vw, 12vw); 
+            font-size: clamp(3rem, 12vw, 15vw); /* Ajusta entre um mínimo e um máximo conforme a tela */
             font-weight: 800; 
             color: #fff; 
-            line-height: 1.1; 
-            width: 95%; 
+            line-height: 1; 
+            width: 90%; 
+            margin: 0 auto;
             transition: 0.3s; 
-            word-wrap: break-word; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            min-height: 40vh;
+            word-wrap: break-word; /* Força a quebra de palavra se for muito grande */
+            overflow-wrap: break-word;
+            display: block; /* Mudamos de flex para block para a quebra de linha funcionar melhor */
+            text-align: center;    
         }
         
         #local-atual { 
@@ -148,8 +148,13 @@
         const elSenha = document.getElementById('senha-atual');
         elSenha.innerText = c.senha;
         
-        if (c.senha.length > 20) {
-            elSenha.style.fontSize = 'clamp(2.5rem, 7vw, 8vw)';
+        const tamanhoTexto = c.senha.length;
+        if (tamanhoTexto > 30) {
+            elSenha.style.fontSize = 'clamp(2rem, 5vw, 6vw)';
+        } else if (tamanhoTexto > 20) {
+            elSenha.style.fontSize = 'clamp(2.5rem, 7vw, 9vw)';
+        } else if (tamanhoTexto > 12) {
+            elSenha.style.fontSize = 'clamp(3.5rem, 9vw, 11vw)';
         } else {
             elSenha.style.fontSize = ''; 
         }
