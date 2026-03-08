@@ -194,7 +194,9 @@
         };
 
         window.speechSynthesis.speak(fala);
-    function iniciarModoEspera() {
+    }
+
+    function iniciarModoEspera() {    
         if(processando) return;
         document.getElementById('area-foco').classList.add('modo-espera');
         document.getElementById('txt-status').innerText = "INFORMATIVO";
