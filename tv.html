@@ -121,6 +121,30 @@
     ];
     let indexInfo = 0;
 
+    // Função de tratamento em conformidade com a LGPD (Abreviação visual de sobrenomes)
+    function aplicarLGPD(textoOriginal) {
+        if (!textoOriginal) return "";
+        let textoLimpo = textoOriginal.trim();
+        
+        // Se for um padrão de senha convencional (Ex: "Senha A-102" ou "A15"), pula a formatação
+        if (textoLimpo.toUpperCase().includes("SENHA") || !textoLimpo.includes(" ")) {
+            return textoLimpo;
+        }
+
+        let partes = textoLimpo.split(/\s+/);
+        if (partes.length <= 1) return textoLimpo;
+
+        let primeiroNome = partes[0];
+        let sobrenomesAbreviados = partes.slice(1).map(sobrenome => {
+            if (/^(de|da|do|dos|das|e)$/i.test(sobrenome)) {
+                return sobrenome.toLowerCase();
+            }
+            return sobrenome.charAt(0).toUpperCase() + ".";
+        }).join(" ");
+
+        return `${primeiroNome} ${sobrenomesAbreviados}`;
+    }
+
     function iniciarTV() {
         document.getElementById('bloqueio-som').style.display = 'none';
         iniciarModoEspera();
@@ -145,10 +169,13 @@
         document.getElementById('area-foco').classList.remove('modo-espera');
         document.getElementById('txt-status').innerText = "PACIENTE";
         
-        const elSenha = document.getElementById('senha-atual');
-        elSenha.innerText = c.senha;
+        // LGPD: Tratamento aplicado à string que será renderizada na tela principal
+        const nomeFormatadoTela = aplicarLGPD(c.senha);
         
-        const tamanhoTexto = c.senha.length;
+        const elSenha = document.getElementById('senha-atual');
+        elSenha.innerText = nomeFormatadoTela;
+        
+        const tamanhoTexto = nomeFormatadoTela.length;
         if (tamanhoTexto > 30) {
             elSenha.style.fontSize = 'clamp(2rem, 5vw, 6vw)';
         } else if (tamanhoTexto > 20) {
@@ -168,13 +195,15 @@
         }
 
         const preposicao = getPreposicao(c.consultorio);
-        const mensagem = `Atenção. Paciente, ${c.senha}. Dirija-se ${preposicao} ${c.consultorio}`;
+        
+        // Atenção: A string de chamada vocal lê o c.senha original por extenso!
+        const textoParaFalar = c.senha.replace(/PREF\./gi, "PREFERENCIAL");
+        const mensagem = `Atenção. Paciente, ${textoParaFalar}. Dirija-se ${preposicao} ${c.consultorio}`;
         
         // --- CONFIGURAÇÃO DA FALA MASCULINA ---
         const fala = new SpeechSynthesisUtterance(mensagem);
         const vozes = window.speechSynthesis.getVoices();
 
-        // Tenta encontrar vozes masculinas de qualidade (Google, Antonio, Ricardo, Daniel)
         let vozEscolhida = vozes.find(v => 
             (v.name.includes('Google') || v.name.includes('Antonio') || v.name.includes('Ricardo') || v.name.includes('Daniel')) 
             && v.lang === 'pt-BR'
@@ -182,11 +211,12 @@
 
         fala.voice = vozEscolhida;
         fala.lang = 'pt-BR';
-        fala.rate = 1.0;   // Velocidade firme
-        fala.pitch = 0.8;  // Tom mais grave (Autoritário)
+        fala.rate = 1.0;   
+        fala.pitch = 0.8;  
 
         fala.onend = () => {
-            atualizarHistorico(c);
+            // Histórico também armazenará e exibirá a versão em conformidade com a LGPD
+            atualizarHistorico({ senha: nomeFormatadoTela, consultorio: c.consultorio });
             timeoutEspera = setTimeout(() => iniciarModoEspera(), 4000);
             processando = false;
             if (fila.length > 0) processarFila();
@@ -205,17 +235,15 @@
         const textoInformativo = informativos[indexInfo];
         elSenha.innerText = textoInformativo;
 
-        // --- LÓGICA DE ADAPTAÇÃO PARA OS AVISOS ---
         const tamanhoAviso = textoInformativo.length;
         
         if (tamanhoAviso > 50) {
-            elSenha.style.fontSize = 'clamp(1.5rem, 4vw, 5vw)'; // Frases muito longas
+            elSenha.style.fontSize = 'clamp(1.5rem, 4vw, 5vw)'; 
         } else if (tamanhoAviso > 30) {
-            elSenha.style.fontSize = 'clamp(2rem, 5vw, 6vw)';   // Frases médias
+            elSenha.style.fontSize = 'clamp(2rem, 5vw, 6vw)';   
         } else {
-            elSenha.style.fontSize = ''; // Tamanho padrão do modo-espera no CSS
+            elSenha.style.fontSize = ''; 
         }
-        // ------------------------------------------
 
         indexInfo = (indexInfo + 1) % informativos.length;
         timeoutEspera = setTimeout(() => iniciarModoEspera(), 6000);
