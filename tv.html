@@ -21,16 +21,16 @@
         .chamada-foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); transition: all 0.5s ease; position: relative; padding: 20px; text-align: center; }
                
         #senha-atual { 
-            font-size: clamp(3rem, 12vw, 15vw); 
+            font-size: clamp(3rem, 12vw, 15vw); /* Ajusta entre um mínimo e um máximo conforme a tela */
             font-weight: 800; 
             color: #fff; 
             line-height: 1; 
             width: 90%; 
             margin: 0 auto;
             transition: 0.3s; 
-            word-wrap: break-word; 
+            word-wrap: break-word; /* Força a quebra de palavra se for muito grande */
             overflow-wrap: break-word;
-            display: block; 
+            display: block; /* Mudamos de flex para block para a quebra de linha funcionar melhor */
             text-align: center;    
         }
         
@@ -94,11 +94,12 @@
     </footer>
 
 <script>
-    // --- DESPERTADOR DE VOZES ---
+    // --- DESPERTADOR DE VOZES (Início do Script) ---
     window.speechSynthesis.getVoices();
     if (speechSynthesis.onvoiceschanged !== undefined) {
         speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
     }
+    // -----------------------------------------------
 
     const uID = sessionStorage.getItem('u_id');
     const uNome = sessionStorage.getItem('u_nome');
@@ -120,32 +121,6 @@
     ];
     let indexInfo = 0;
 
-    // --- FUNÇÃO DE ADAPTAÇÃO LGPD ---
-    function ocultarSobrenome(nomeCompleto) {
-        if (!nomeCompleto) return "";
-        const partes = nomeCompleto.trim().split(/\s+/);
-        
-        // Se for uma senha comum curta ou apenas uma palavra, mantém original
-        if (partes.length <= 1) return nomeCompleto;
-
-        // Lista de conectores comuns que não devem ser tratados como sobrenomes autônomos
-        const conectores = ["de", "da", "do", "das", "dos", "e"];
-
-        const primeiroNome = partes[0];
-        const ultimoSobrenome = partes[partes.length - 1];
-        
-        // Processa os nomes do meio
-        const nomesDoMeio = partes.slice(1, -1).map(parte => {
-            if (conectores.includes(parte.toLowerCase())) {
-                return parte; // Mantém conectores por extenso (ex: "de")
-            }
-            return parte.charAt(0).toUpperCase() + "."; // Abrevia com a inicial
-        });
-
-        // Junta tudo de volta de forma limpa
-        return [primeiroNome, ...nomesDoMeio, ultimoSobrenome].join(" ");
-    }
-
     function iniciarTV() {
         document.getElementById('bloqueio-som').style.display = 'none';
         iniciarModoEspera();
@@ -165,19 +140,15 @@
         clearTimeout(timeoutEspera);
         
         const c = fila.shift();
-        
-        // Aplica a regra da LGPD para o texto de exibição na tela
-        const nomeTratadoLGPD = ocultarSobrenome(c.senha);
-        
         new Audio('https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3').play();
 
         document.getElementById('area-foco').classList.remove('modo-espera');
         document.getElementById('txt-status').innerText = "PACIENTE";
         
         const elSenha = document.getElementById('senha-atual');
-        elSenha.innerText = nomeTratadoLGPD;
+        elSenha.innerText = c.senha;
         
-        const tamanhoTexto = nomeTratadoLGPD.length;
+        const tamanhoTexto = c.senha.length;
         if (tamanhoTexto > 30) {
             elSenha.style.fontSize = 'clamp(2rem, 5vw, 6vw)';
         } else if (tamanhoTexto > 20) {
@@ -197,13 +168,13 @@
         }
 
         const preposicao = getPreposicao(c.consultorio);
+        const mensagem = `Atenção. Paciente, ${c.senha}. Dirija-se ${preposicao} ${c.consultorio}`;
         
-        // Na fala de voz, usamos o nome tratado para garantir a privacidade sonora também
-        const mensagem = `Atenção. Paciente, ${nomeTratadoLGPD}. Dirija-se ${preposicao} ${c.consultorio}`;
-        
+        // --- CONFIGURAÇÃO DA FALA MASCULINA ---
         const fala = new SpeechSynthesisUtterance(mensagem);
         const vozes = window.speechSynthesis.getVoices();
 
+        // Tenta encontrar vozes masculinas de qualidade (Google, Antonio, Ricardo, Daniel)
         let vozEscolhida = vozes.find(v => 
             (v.name.includes('Google') || v.name.includes('Antonio') || v.name.includes('Ricardo') || v.name.includes('Daniel')) 
             && v.lang === 'pt-BR'
@@ -211,12 +182,11 @@
 
         fala.voice = vozEscolhida;
         fala.lang = 'pt-BR';
-        fala.rate = 1.0;   
-        fala.pitch = 0.8;  
+        fala.rate = 1.0;   // Velocidade firme
+        fala.pitch = 0.8;  // Tom mais grave (Autoritário)
 
         fala.onend = () => {
-            // Salva o objeto modificado no histórico da tela
-            atualizarHistorico({ ...c, senha: nomeTratadoLGPD });
+            atualizarHistorico(c);
             timeoutEspera = setTimeout(() => iniciarModoEspera(), 4000);
             processando = false;
             if (fila.length > 0) processarFila();
@@ -235,14 +205,17 @@
         const textoInformativo = informativos[indexInfo];
         elSenha.innerText = textoInformativo;
 
+        // --- LÓGICA DE ADAPTAÇÃO PARA OS AVISOS ---
         const tamanhoAviso = textoInformativo.length;
+        
         if (tamanhoAviso > 50) {
-            elSenha.style.fontSize = 'clamp(1.5rem, 4vw, 5vw)'; 
+            elSenha.style.fontSize = 'clamp(1.5rem, 4vw, 5vw)'; // Frases muito longas
         } else if (tamanhoAviso > 30) {
-            elSenha.style.fontSize = 'clamp(2rem, 5vw, 6vw)';   
+            elSenha.style.fontSize = 'clamp(2rem, 5vw, 6vw)';   // Frases médias
         } else {
-            elSenha.style.fontSize = ''; 
+            elSenha.style.fontSize = ''; // Tamanho padrão do modo-espera no CSS
         }
+        // ------------------------------------------
 
         indexInfo = (indexInfo + 1) % informativos.length;
         timeoutEspera = setTimeout(() => iniciarModoEspera(), 6000);
