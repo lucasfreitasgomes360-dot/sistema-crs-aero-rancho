@@ -36,6 +36,10 @@
 
         .btn-chamar { width: 100%; padding: 22px; background: var(--primary); color: white; border: none; border-radius: 22px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-chamar:active { transform: scale(0.98); }
+
+        .btn-silencio { width: 100%; padding: 18px; background: #f59e0b; color: white; border: none; border-radius: 20px; font-size: 0.95rem; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 12px; }
+        .btn-silencio:hover { background: #d97706; transform: translateY(-2px); box-shadow: 0 8px 18px rgba(245, 158, 11, 0.25); }
+        .btn-silencio:active { transform: scale(0.98); }
         
         #success-check { color: var(--success); display: none; align-items: center; gap: 5px; font-weight: 800; margin-top: 10px; animation: bounce 0.5s ease; }
 
@@ -94,6 +98,11 @@
         <button class="btn-chamar" onclick="chamar()">
             <span class="material-symbols-rounded">campaign</span>
             CHAMAR AGORA
+        </button>
+
+        <button class="btn-silencio" onclick="solicitarSilencio()">
+            <span class="material-symbols-rounded">volume_off</span>
+            SOLICITAR SILÊNCIO / CONSCIENTIZAÇÃO
         </button>
 
         <div id="success-check">
@@ -218,6 +227,7 @@
             time: Date.now()
         }).then(() => {
             const check = document.getElementById('success-check');
+            check.innerHTML = '<span class="material-symbols-rounded">check_circle</span> CHAMADO ENVIADO!';
             check.style.display = 'flex';
             setTimeout(() => { check.style.display = 'none'; }, 2000);
 
@@ -227,6 +237,24 @@
                 input.value = "";
                 renderizarHistorico();
             }
+        });
+    }
+
+    function solicitarSilencio() {
+        db.ref(uID + '/chamada').set({
+            senha: "POR FAVOR, REDUZA O VOLUME DO CELULAR E CONVERSAS",
+            consultorio: "RECEPÇÃO E TRIAGEM",
+            medico: pNome,
+            tipoAviso: "silencio",
+            time: Date.now()
+        }).then(() => {
+            const check = document.getElementById('success-check');
+            check.innerHTML = '<span class="material-symbols-rounded">check_circle</span> AVISO DE SILÊNCIO ENVIADO PARA A TV!';
+            check.style.display = 'flex';
+            setTimeout(() => { 
+                check.style.display = 'none'; 
+                check.innerHTML = '<span class="material-symbols-rounded">check_circle</span> CHAMADO ENVIADO!';
+            }, 2500);
         });
     }
 
@@ -246,7 +274,6 @@
     // LÓGICA DE CHAT RESTRITO PARA EQUIPE DE SAÚDE
     // ==========================================
     (function inicializarChatSaude() {
-        // Lista restrita aos profissionais de saúde
         const CARGOS_SAUDE = [
             "médica", "médico", 
             "enfermeira", "enfermeiro", 
@@ -257,7 +284,6 @@
         const eProfissionalSaude = CARGOS_SAUDE.includes(cargoAtual);
 
         if (!eProfissionalSaude) {
-            // Se não for profissional da saúde, o chat permanece oculto
             return;
         }
 
@@ -268,7 +294,6 @@
 
         chatCard.classList.remove('hidden');
 
-        // Comunicação 100% no navegador da máquina (Volátil / Sem persistência em servidor)
         const canalSaude = new BroadcastChannel('chat_usf_saude_local');
 
         function renderizarMensagem(autor, cargo, texto, tipo) {
