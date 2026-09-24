@@ -21,16 +21,16 @@
         .chamada-foco { flex: 3; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, #1e293b 0%, #020617 100%); transition: all 0.5s ease; position: relative; padding: 20px; text-align: center; }
                
         #senha-atual { 
-            font-size: clamp(3rem, 12vw, 15vw); /* Ajusta entre um mínimo e um máximo conforme a tela */
+            font-size: clamp(3rem, 12vw, 15vw);
             font-weight: 800; 
             color: #fff; 
-            line-height: 1; 
+            line-height: 1.1; 
             width: 90%; 
             margin: 0 auto;
             transition: 0.3s; 
-            word-wrap: break-word; /* Força a quebra de palavra se for muito grande */
+            word-wrap: break-word;
             overflow-wrap: break-word;
-            display: block; /* Mudamos de flex para block para a quebra de linha funcionar melhor */
+            display: block;
             text-align: center;    
         }
         
@@ -87,19 +87,18 @@
     </div>
 
     <footer style="background: #e11d48; height: 60px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-        <div class="marquee-text" id="marquee-txt">Bem-vindo(a)! Sua saúde é nossa prioridade. • Mantenha seus documentos em mãos • Atendimento prioritário para idosos e gestantes.</div>
+        <div class="marquee-text" id="marquee-txt">Bem-vindo(a)! Sua saúde é nossa prioridade. • Reduza o volume das conversas e dos aparelhos celulares: o ruído prejudica os atendimentos, a triagem e afeta pessoas autistas e deficientes auditivos. • Mantenha seus documentos em mãos • Atendimento prioritário para idosos e gestantes.</div>
         <div style="position: absolute; right: 20px; bottom: 5px; font-size: 0.6rem; color: rgba(255,255,255,0.6); font-weight: 800; letter-spacing: 1px;">
             DESENVOLVIDO POR LUCAS FREITAS GOMES © 2026
         </div>
     </footer>
 
 <script>
-    // --- DESPERTADOR DE VOZES (Início do Script) ---
+    // --- DESPERTADOR DE VOZES ---
     window.speechSynthesis.getVoices();
     if (speechSynthesis.onvoiceschanged !== undefined) {
         speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
     }
-    // -----------------------------------------------
 
     const uID = sessionStorage.getItem('u_id');
     const uNome = sessionStorage.getItem('u_nome');
@@ -115,18 +114,18 @@
     const informativos = [
         "AGUARDE SEU NOME NA TELA",
         "ESTEJA COM O CARTÃO DO SUS",
-        "MANTENHA O SILÊNCIO",
+        "REDUZA O VOLUME DO CELULAR E DAS CONVERSAS",
+        "O ruído excessivo atrapalha o atendimento médico e a triagem.",
+        "Sons altos afetam pessoas autistas e dificultam a comunicação com deficientes auditivos.",
         "Beba água! Hidratação é essencial para o corpo.",
         "Combate à Dengue: Não deixe água parada no seu quintal."
     ];
     let indexInfo = 0;
 
-    // Função de tratamento em conformidade com a LGPD (Abreviação visual de sobrenomes)
     function aplicarLGPD(textoOriginal) {
         if (!textoOriginal) return "";
         let textoLimpo = textoOriginal.trim();
         
-        // Se for um padrão de senha convencional (Ex: "Senha A-102" ou "A15"), pula a formatação
         if (textoLimpo.toUpperCase().includes("SENHA") || !textoLimpo.includes(" ")) {
             return textoLimpo;
         }
@@ -167,40 +166,58 @@
         new Audio('https://assets.mixkit.co/active_storage/sfx/2861/2861-preview.mp3').play();
 
         document.getElementById('area-foco').classList.remove('modo-espera');
-        document.getElementById('txt-status').innerText = "PACIENTE";
-        
-        // LGPD: Tratamento aplicado à string que será renderizada na tela principal
-        const nomeFormatadoTela = aplicarLGPD(c.senha);
         
         const elSenha = document.getElementById('senha-atual');
-        elSenha.innerText = nomeFormatadoTela;
-        
-        const tamanhoTexto = nomeFormatadoTela.length;
-        if (tamanhoTexto > 30) {
-            elSenha.style.fontSize = 'clamp(2rem, 5vw, 6vw)';
-        } else if (tamanhoTexto > 20) {
-            elSenha.style.fontSize = 'clamp(2.5rem, 7vw, 9vw)';
-        } else if (tamanhoTexto > 12) {
-            elSenha.style.fontSize = 'clamp(3.5rem, 9vw, 11vw)';
+        const elLocal = document.getElementById('local-atual');
+        const elStatus = document.getElementById('txt-status');
+
+        let mensagem = "";
+
+        if (c.tipoAviso === "silencio") {
+            elStatus.innerText = "AVISO DE SILÊNCIO E RESPEITO";
+            elStatus.style.color = "#facc15";
+            
+            elSenha.innerText = c.senha;
+            elSenha.style.fontSize = 'clamp(1.8rem, 4.5vw, 6vw)';
+            
+            elLocal.innerText = "ATRAPALHA ATENDIMENTOS, TRIAGEM, AUTISTAS E DEFICIENTES AUDITIVOS";
+            elLocal.style.fontSize = 'clamp(1.2rem, 2.5vw, 3.5vw)';
+
+            mensagem = "Atenção a todos na recepção. Pedimos por favor que reduzam o volume das conversas e dos aparelhos celulares. O barulho atrapalha o atendimento médico e a triagem, além de afetar seriamente pessoas autistas e com deficiência auditiva. Agradecemos a colaboração de todos.";
         } else {
-            elSenha.style.fontSize = ''; 
+            elStatus.innerText = "PACIENTE";
+            elStatus.style.color = "";
+
+            const nomeFormatadoTela = aplicarLGPD(c.senha);
+            
+            elSenha.innerText = nomeFormatadoTela;
+            
+            const tamanhoTexto = nomeFormatadoTela.length;
+            if (tamanhoTexto > 30) {
+                elSenha.style.fontSize = 'clamp(2rem, 5vw, 6vw)';
+            } else if (tamanhoTexto > 20) {
+                elSenha.style.fontSize = 'clamp(2.5rem, 7vw, 9vw)';
+            } else if (tamanhoTexto > 12) {
+                elSenha.style.fontSize = 'clamp(3.5rem, 9vw, 11vw)';
+            } else {
+                elSenha.style.fontSize = ''; 
+            }
+            
+            elLocal.innerText = c.consultorio;
+            elLocal.style.fontSize = '';
+
+            function getPreposicao(local) {
+                const l = local.toLowerCase();
+                const feminino = ["triagem", "sala", "recepção", "medicação", "sutura", "emergência", "reidratação", "observação"];
+                return feminino.some(termo => l.includes(termo)) ? "à" : "ao";
+            }
+
+            const preposicao = getPreposicao(c.consultorio);
+            const textoParaFalar = c.senha.replace(/PREF\./gi, "PREFERENCIAL");
+            mensagem = `Atenção. Paciente, ${textoParaFalar}. Dirija-se ${preposicao} ${c.consultorio}`;
         }
         
-        document.getElementById('local-atual').innerText = c.consultorio;
-
-        function getPreposicao(local) {
-            const l = local.toLowerCase();
-            const feminino = ["triagem", "sala", "recepção", "medicação", "sutura", "emergência", "reidratação", "observação"];
-            return feminino.some(termo => l.includes(termo)) ? "à" : "ao";
-        }
-
-        const preposicao = getPreposicao(c.consultorio);
-        
-        // Atenção: A string de chamada vocal lê o c.senha original por extenso!
-        const textoParaFalar = c.senha.replace(/PREF\./gi, "PREFERENCIAL");
-        const mensagem = `Atenção. Paciente, ${textoParaFalar}. Dirija-se ${preposicao} ${c.consultorio}`;
-        
-        // --- CONFIGURAÇÃO DA FALA MASCULINA ---
+        // --- CONFIGURAÇÃO DA FALA ---
         const fala = new SpeechSynthesisUtterance(mensagem);
         const vozes = window.speechSynthesis.getVoices();
 
@@ -215,8 +232,8 @@
         fala.pitch = 0.8;  
 
         fala.onend = () => {
-            // Histórico também armazenará e exibirá a versão em conformidade com a LGPD
-            atualizarHistorico({ senha: nomeFormatadoTela, consultorio: c.consultorio });
+            const displaySenha = c.tipoAviso === "silencio" ? "AVISO DE SILÊNCIO" : aplicarLGPD(c.senha);
+            atualizarHistorico({ senha: displaySenha, consultorio: c.consultorio });
             timeoutEspera = setTimeout(() => iniciarModoEspera(), 4000);
             processando = false;
             if (fila.length > 0) processarFila();
@@ -230,6 +247,7 @@
         
         document.getElementById('area-foco').classList.add('modo-espera');
         document.getElementById('txt-status').innerText = "INFORMATIVO";
+        document.getElementById('txt-status').style.color = "";
         
         const elSenha = document.getElementById('senha-atual');
         const textoInformativo = informativos[indexInfo];
